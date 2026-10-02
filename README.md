@@ -12,7 +12,7 @@ Commodore 64 Ultimate**, for the
 
 Not every function has been used on real hardware yet: those carry
 `[UNTESTED]` in the headers, and section 20 of the UCI manual lists the
-status of each function (77 of 150 untested in 1.1.0, including the whole
+status of each function (77 of 152 untested in 1.2.0, including the whole
 HTTP target).
 
 Based on the Ultimate II Dos Lib by Scott Hutter and Francesco Sblendorio
@@ -50,8 +50,8 @@ Add the library as a git submodule, pinned to a release tag:
 
 ```
 git submodule add https://github.com/xahmol/ultimate-uci-oscar64.git lib/ultimate-uci-oscar64
-cd lib/ultimate-uci-oscar64 && git checkout v1.1.0 && cd ../..
-git commit -m "Add ultimate-uci-oscar64 v1.1.0 as a submodule"
+cd lib/ultimate-uci-oscar64 && git checkout v1.2.0 && cd ../..
+git commit -m "Add ultimate-uci-oscar64 v1.2.0 as a submodule"
 ```
 
 Add its `include/` folder to the compiler's include path and to the
@@ -77,8 +77,8 @@ Clone such a project with `git clone --recursive`, or run
 **Updating** to a newer release:
 
 ```
-cd lib/ultimate-uci-oscar64 && git fetch --tags && git checkout v1.2.0 && cd ../..
-git commit -am "Update ultimate-uci-oscar64 to v1.2.0"
+cd lib/ultimate-uci-oscar64 && git fetch --tags && git checkout v1.3.0 && cd ../..
+git commit -am "Update ultimate-uci-oscar64 to v1.3.0"
 ```
 
 Read [`CHANGELOG.md`](CHANGELOG.md) first: a new MAJOR version changes the

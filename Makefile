@@ -15,7 +15,7 @@ CFLAGS  = -i=include -O2 -dNOFLOAT -n
 LIBSRCS = $(wildcard include/*.c include/*.h)
 VERSION = $(shell cat VERSION)
 
-.PHONY: all check check-version check-modplay-api smoke clean
+.PHONY: all check check-version check-modplay-api smoke speedprobe clean
 all: check
 
 check: check-version build/compile_all64.prg build/compile_all128.prg build/compile_modplay64.prg check-modplay-api
@@ -52,6 +52,13 @@ build/compile_all128.prg: build/compile_all.c
 	$(OSCAR64) $(CFLAGS) -i=include -tm=c128 -o=$@ $<
 
 smoke: build/smoke64.prg
+
+# Hardware test of the raster-timed speed probe (Ultimate 64, PAL).
+speedprobe: build/speedprobe.prg
+
+build/speedprobe.prg: tests/speed_probe.c $(LIBSRCS)
+	@mkdir -p build
+	$(OSCAR64) $(CFLAGS) -tm=c64 -o=$@ $<
 
 build/smoke64.prg: tests/smoke.c $(LIBSRCS)
 	@mkdir -p build

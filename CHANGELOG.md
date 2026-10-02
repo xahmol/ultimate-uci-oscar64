@@ -5,6 +5,35 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.2.0] - 2026-10-02
+
+### Added
+
+- `uii_turbo_probe_max()`: classifies the maximum turbo speed as 48 or
+  64 MHz by timing a 64,764-cycle loop against the VIC raster counter
+  (based on `upic_select_display_path()` by Christian Gleissner,
+  mandelbrot-upic). Handles the forced 1 MHz window the Ultimate 64
+  applies for about 2 s after every reset: a result counts only when two
+  consecutive loops agree. Also a better "turbo engaged" check than
+  `uii_turbo_detect()`. `uii_turbo_probe_lines()` returns one raw
+  measurement. Tested on an Ultimate 64-II (16 lines at 64 MHz, 21 at
+  index 14 = 48 MHz); not yet on a real 48 MHz Ultimate 64 / Elite I.
+- `tests/speed_probe.c` (`make speedprobe`): hardware test of the probe.
+
+### Fixed
+
+- `uii_sendcommand()` waits (bounded) for a pending abort to finish before
+  pushing. `uii_detect()` writes ABORT on every call, so the first command
+  after `uii_wait_for_uci()` could be answered after the handshake was
+  reset and read back empty: `uii_identify()` failed in 2 of 6 starts in
+  UltimateDemo2026, 0 of 22 after the fix.
+
+### Documentation
+
+- `TURBOCONTROL_MANUAL.md`: the raster counter runs at real time on the
+  U64 (the manual said it was CPU-clocked), the forced 1 MHz window, the
+  probe, and a revised explanation of the 2026-09-23 "transition bug".
+
 ## [1.1.0] - 2026-10-02
 
 Ultimate 64 hardware modules moved in from UltimateDemo2026, renamed to the

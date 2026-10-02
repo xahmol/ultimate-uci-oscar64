@@ -396,6 +396,20 @@ void uii_sendcommand(char *bytes, unsigned count)
 	// first reply was queued -- a state that never returns to idle.
 	// Fix by Christian Gleissner (mandelbrot-upic commit 6379683,
 	// 2026-09-28): seen hanging in about 2 of 5 program starts.
+	// Let a pending abort finish first (status bit 2, ABORT_P). uii_detect()
+	// writes ABORT on every call, so uii_wait_for_uci() leaves one pending
+	// just before the program's first command; a command pushed while it
+	// is pending can be answered after the handshake was reset, and the
+	// caller then reads an empty reply (seen 2026-10-02 in UltimateDemo2026:
+	// uii_identify() right after uii_wait_for_uci() returned no data in 2 of
+	// 6 starts). Bounded, so a firmware that never clears the bit can't hang
+	// here: 65536 status reads, well under a second at 1 MHz.
+	{
+		unsigned n = 0;
+		while ((uii_reg_read.status & 0x04) && --n)
+			;
+	}
+
 	while (success == 0)
 	{
 		// Wait for idle state

@@ -130,3 +130,89 @@ void uii_turbo_fast(void) { uii_turbo_set(TURBO_SPEED_MAX | TURBO_BADLINES_OFF);
 void uii_turbo_slow(void) { uii_turbo_set(TURBO_SPEED_1MHZ); }
 
 unsigned char uii_turbo_get(void) { return TURBO_D031; }
+
+// ---------------------------------------------------------------
+// Raster-timed speed probe
+//
+// Based on upic_select_display_path() by Christian Gleissner, in
+// mandelbrot-upic (include/upic_viewer.c, PR #2): the timed loop and its
+// cycle count are his. Adapted: the measurement is its own function and
+// the classification is C (the loop stays one asm block in a __noinline
+// function, so Oscar64 can't duplicate it -- see docs/OSCAR64_MANUAL.md on
+// inline asm in loops), interrupts are off during the loop, and $D031 is
+// restored by uii_turbo_probe_max().
+//
+// Every loop-back is an absolute jmp (always 3 cycles), so the cycle
+// count does not depend on where the linker places the code, and there is
+// no I/O access inside the loop (a VIC register read costs an extra
+// sub-slot at turbo speed): 36 outer passes of 1799 cycles = 64764.
+// ---------------------------------------------------------------
+static unsigned char uii_turbo_probe_result;
+
+__noinline unsigned char uii_turbo_probe_lines(char control)
+{
+    uii_turbo_set(control);
+    __asm {
+        php
+        sei
+    f1:
+        lda $d011                // wait for the bottom of the frame...
+        bpl f1
+    f2:
+        lda $d011                // ...then for the raster to wrap to 0
+        bmi f2
+        lda #TURBO_PROBE_START
+    w:
+        cmp $d012
+        bne w
+
+        ldy #36                  // 36 * 1799 = 64764 cycles
+    o:
+        ldx #0
+    i:
+        dex
+        beq id
+        jmp i
+    id:
+        dey
+        beq od
+        jmp o
+    od:
+        lda $d012
+        sec
+        sbc #TURBO_PROBE_START
+        sta uii_turbo_probe_result
+        plp
+    }
+    return uii_turbo_probe_result;
+}
+
+char uii_turbo_probe_max(void)
+{
+    unsigned char saved = TURBO_D031;
+    unsigned char saved_enable = TURBO_D030;
+    char previous = 0xFF;               // no class yet
+    char result = TURBO_MAX_UNKNOWN;
+    unsigned char tries = 0;            // wraps: 256 loops
+
+    if (saved == 0xFF)
+        return TURBO_MAX_UNKNOWN;       // no turbo registers
+
+    do
+    {
+        unsigned char lines = uii_turbo_probe_lines(TURBO_FULL);
+        char cls = lines < TURBO_PROBE_64MHZ ? TURBO_MAX_64MHZ
+                 : lines < TURBO_PROBE_VALID ? TURBO_MAX_48MHZ
+                 : TURBO_MAX_UNKNOWN;   // at 1 MHz (or partly): measure again
+        if (cls != TURBO_MAX_UNKNOWN && cls == previous)
+        {
+            result = cls;
+            break;
+        }
+        previous = cls;
+    } while (--tries);
+
+    TURBO_D031 = saved;
+    TURBO_D030 = saved_enable;
+    return result;
+}

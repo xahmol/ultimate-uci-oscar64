@@ -23,70 +23,16 @@ Detection method — CIA TOD timing against a hand-written assembly loop:
   compared against a single threshold to confirm turbo is genuinely
   engaged.
 
-Note: simple CIA timer B or VIC raster measurements do NOT work on
-U64 because both are clocked at the CPU frequency — they track CPU
-cycles, not real time.  CIA TOD advances at real 50/60 Hz regardless
-of CPU speed, which is what uii_turbo_benchmark_delay()'s loop exploits.
-
-This library deliberately does NOT try to classify 48 MHz vs 64 MHz
-from the timing measurement -- that distinction is a hardware-model
-fact (see below), and measuring it via elapsed time proved unreliable
-in practice (same hardware, same speed setting, classified differently
-across two consecutive runs -- the measurement sits too close to the
-48-vs-64 boundary to trust). For the MHz ceiling, query
-CTRL_CMD_GET_HWINFO's product-name string at the application level
-instead: plain "Ultimate 64" is now ambiguous (see below), "Ultimate
-64 Elite" (Elite I, no "-II") = ~48 MHz, "Ultimate 64-II" = ~64 MHz.
-Gideon Zweijtzer confirmed this field of GET_HWINFO stays supported
-long-term (only the command's separate SID-ID subpart is deprecated).
-This is meant to be a compile-time-fixed identity string, not a
-measurement. See src/main.c in UltimateDemo2026 for a worked example.
-
-2026-09-23: revisited and closed. Tried a longer, continuous (single
-CIA1-TOD reset/read, no per-pass reset) benchmark against a real
-Ultimate 64-II at both the 48 MHz speed index and MAX, specifically to
-see whether a long-enough loop could resolve the two tiers where a
-single COUNT=0xFFFF pass can't (both read 0 tenths -- below the 100ms
-quantization floor). Result: no. Elapsed times for the same speed
-index and roughly-comparable loop lengths were themselves inconsistent
-run to run (e.g. one run's 4x-shorter loop measured a *longer* elapsed
-time than a prior run's longer loop, at nominally the same settings),
-and both speed tiers measured far below their labeled MHz for any
-multi-second continuous pass (effective throughput in the low single-
-digit MHz range at a "48 MHz" or "64 MHz" setting). Most likely cause:
-holding SEI for several seconds straight -- which every measurement in
-this family requires, to keep other interrupt-driven activity from
-disturbing the reading -- may itself trigger some real, unexplored
-throttling or wait-state behavior on this hardware, rather than the
-CPU genuinely sustaining its labeled clock throughout. Whatever the
-mechanism, this confirms (with new, independent real-hardware data)
-that CIA-TOD timing cannot be made to reliably resolve 48 vs 64 MHz,
-not just that a single short pass lacks resolution -- a longer pass
-makes the measurement less trustworthy, not more. Final decision:
-GET_HWINFO's product string is the only signal this project uses for
-MHz classification, permanently. The one known gap (plain "Ultimate
-64" being ambiguous between C64U and genuine non-Elite U64) is not
-being chased further either -- see src/main.c's classification comment
-for the accepted tradeoff (only the distinct "Ultimate 64 Elite"
-string is trusted for 48 MHz; everything else, including the ambiguous
-bare string, defaults to 64 MHz -- so only a genuine non-Elite U64
-owner ever sees a wrong label).
-
-CONFIRMED (2026-09-20, real hardware): Commodore 64 Ultimate (C64U),
-current Commodore firmware ("1.1"), reports plain "Ultimate 64" --
-identical to the original non-Elite U64's string, not "C64 Ultimate"
-as an earlier REST-API-sourced claim (2026-09-16) had it. Confirmed by
-forum report + screenshot from a real C64U unit; matches what
-UE2-C64U-Emulator had already shown running the same firmware image
-(genuine result, not an emulator artifact -- that earlier uncertainty
-is resolved). Since GET_HWINFO alone can't distinguish C64U (64 MHz)
-from genuine non-Elite U64 (48 MHz) anymore, classification code needs
-to pick a default for the ambiguous case -- UltimateDemo2026 now
-defaults plain "Ultimate 64" to 64 MHz, since C64U is both the more
-common case today and documented as 64 MHz-capable everywhere else;
-genuine non-Elite U64 owners will see an optimistic label as the
-accepted tradeoff. See src/main.c's own comment on this for the
-worked example of that decision.
+48 vs 64 MHz: use uii_turbo_probe_max() (library 1.2.0), which times a
+short loop against the VIC raster counter. The raster counter advances
+once per real PAL line at any CPU speed -- an earlier note here said it
+is CPU-clocked on U64, which was wrong. CIA TOD (0.1 s steps) can't
+resolve 48 vs 64 MHz; attempts on 2026-09-14/23 were inconsistent,
+most likely because they overlapped the forced 1 MHz window the U64
+applies for about 2 s after every reset. CTRL_CMD_GET_HWINFO's product
+string can't either: a C64 Ultimate and an original 48 MHz Ultimate 64
+both report plain "Ultimate 64". See docs/TURBOCONTROL_MANUAL.md
+sections 2, 7 and 9.
 
 Supported hardware:
   Ultimate 64 original / Elite I  — max ~48 MHz
@@ -262,6 +208,50 @@ void uii_turbo_slow(void);
 
 unsigned char uii_turbo_get(void);  // [UNTESTED]
 // Read the current $D031 value (0xFF if registers not available).
+
+// ---------------------------------------------------------------
+// Raster-timed speed probe (library 1.2.0)
+//
+// Classifies the maximum turbo speed as 48 or 64 MHz by timing a fixed
+// 64,764-cycle loop against the VIC raster counter ($D012), which
+// advances once per real PAL line (64 us) at any CPU speed:
+//   64 MHz: 64764 / (63 * 63) = 16.3 lines
+//   48 MHz: 64764 / (63 * 47) = 21.9 lines
+// (the VIC takes one sub-slot per phi2 cycle, so the CPU gets 63 or 47
+// cycles per phi2, not 64 or 48). A loop at 1 MHz spans 1028 lines.
+// Based on upic_select_display_path() by Christian Gleissner in
+// mandelbrot-upic (include/upic_viewer.c, PR #2); adapted: split into a
+// raw measurement and a classifier, interrupts disabled during the loop,
+// $D031 restored afterwards, PAL only.
+// ---------------------------------------------------------------
+
+#define TURBO_PROBE_START   0x20   // raster line the timed loop starts on
+#define TURBO_PROBE_64MHZ   19     // fewer lines: 64 MHz
+#define TURBO_PROBE_VALID   26     // fewer lines (and >= 19): 48 MHz; else not a turbo tier
+
+#define TURBO_MAX_UNKNOWN   0      // no stable result (turbo not engaged, or gave up)
+#define TURBO_MAX_48MHZ     1      // Ultimate 64 / Elite I at index 15
+#define TURBO_MAX_64MHZ     2      // Ultimate 64 Elite II / C64 Ultimate at index 15
+
+unsigned char uii_turbo_probe_lines(char control);
+/*
+  One measurement: set $D031 to `control` (via uii_turbo_set), wait for
+  raster line TURBO_PROBE_START, run the 64,764-cycle loop with
+  interrupts disabled and return the number of raster lines it took,
+  modulo 256 (16 at 64 MHz, 21-22 at 48 MHz, 92 for a loop entirely at
+  1 MHz). Leaves $D031 at `control`. PAL timing.
+*/
+
+char uii_turbo_probe_max(void);
+/*
+  Classify the maximum turbo speed: TURBO_MAX_64MHZ, TURBO_MAX_48MHZ or
+  TURBO_MAX_UNKNOWN. Measures at TURBO_FULL until two consecutive loops
+  give the same class -- the Ultimate 64 runs the CPU at 1 MHz for a few
+  seconds after a reset whatever $D031 says, and a window can end during
+  at most one loop. Each loop rewrites $D031. Gives up after 256 loops
+  (about 20 s if turbo stays off, e.g. turbo registers disabled in the
+  menu). Restores the previous $D031 value before returning.
+*/
 
 #pragma compile("ultimate_turbo_lib.c")
 
