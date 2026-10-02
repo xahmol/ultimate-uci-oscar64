@@ -122,6 +122,8 @@ __noinline char *uii_upic_column(char col)
 // gets 47 cycles per phi2 at 48 MHz, so 16 pixels in 3 x 24 + 22 = 94
 // cycles are exactly 16 dots, the same pitch as the 64 MHz path.
 
+#pragma code(UII_UPIC_INIT)
+
 static char *gen;
 
 static void gen_op(char op, unsigned operand)
@@ -131,8 +133,6 @@ static void gen_op(char op, unsigned operand)
 	gen[2] = (char)(operand >> 8);
 	gen += 3;
 }
-
-#pragma code(UII_UPIC_INIT)
 
 static void uii_upic_generate(char path)
 {
