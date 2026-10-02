@@ -15,10 +15,10 @@ CFLAGS  = -i=include -O2 -dNOFLOAT -n
 LIBSRCS = $(wildcard include/*.c include/*.h)
 VERSION = $(shell cat VERSION)
 
-.PHONY: all check check-version smoke clean
+.PHONY: all check check-version check-modplay-api smoke clean
 all: check
 
-check: check-version build/compile_all64.prg build/compile_all128.prg
+check: check-version build/compile_all64.prg build/compile_all128.prg build/compile_modplay64.prg check-modplay-api
 
 check-version:
 	@grep -q '^#define UII_LIB_VERSION "$(VERSION)"' include/ultimate_common_lib.h || \
@@ -27,10 +27,23 @@ check-version:
 		(echo "ERROR: CHANGELOG.md has no '## [$(VERSION)]' entry" && false)
 	@echo "Version $(VERSION) consistent"
 
+NOMODPLAY = $(filter-out include/ultimate_modplay_lib.h,$(wildcard include/ultimate_*_lib.h))
+
 build/compile_all.c: tests/gen_compile_all.sh $(LIBSRCS)
 	@mkdir -p build
-	sh tests/gen_compile_all.sh > $@
-	@echo "$$(grep -c '(void \*)uii_' $@) library functions"
+	sh tests/gen_compile_all.sh $(NOMODPLAY) > $@
+	@echo "$$(grep -c '(void \*)uii_' $@) library functions (+ MOD player, checked separately)"
+
+build/compile_modplay64.prg: tests/compile_modplay.c $(LIBSRCS)
+	@mkdir -p build
+	$(OSCAR64) $(CFLAGS) -i=include -tm=c64 -o=$@ $<
+
+# Every function declared in the MOD player header must be called by
+# tests/compile_modplay.c.
+check-modplay-api:
+	@for f in $$(grep -oE '^[a-z][a-zA-Z_ *]*[ *](uii_[a-z_0-9]+)\(' include/ultimate_modplay_lib.h | grep -oE 'uii_[a-z_0-9]+'); do \
+		grep -q "$$f(" tests/compile_modplay.c || { echo "ERROR: $$f missing in tests/compile_modplay.c"; exit 1; }; done
+	@echo "MOD player API covered by tests/compile_modplay.c"
 
 build/compile_all64.prg: build/compile_all.c
 	$(OSCAR64) $(CFLAGS) -i=include -tm=c64 -o=$@ $<

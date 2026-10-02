@@ -5,6 +5,45 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.1.0] - 2026-10-02
+
+Ultimate 64 hardware modules moved in from UltimateDemo2026, renamed to the
+library's conventions (file `ultimate_<module>_lib`, functions
+`uii_<module>_*`). No change to the 1.0.0 UCI API.
+
+### Added
+
+- `ultimate_turbo_lib`: U64 turbo speed control (`$D031`) and
+  `uii_turbo_detect()` (CIA TOD timing, confirms turbo is engaged; 48 vs
+  64 MHz comes from `uii_get_hwinfo()`). Corrected `TURBO_SPEED_*` table.
+  Manual: `docs/TURBOCONTROL_MANUAL.md`.
+- `ultimate_audio_lib`: Ultimate Audio 7-voice DMA layer at `$DF20`, plus
+  `uii_audio_reu_fetch()` (REU to C64 RAM).
+- `ultimate_modplay_lib`: ProTracker MOD player (REU samples, CIA1 timer A
+  IRQ, zero page `$03-$51` saved in the IRQ wrapper). Manual for both:
+  `docs/ULTIMATEAUDIO_MANUAL.md`.
+- Hardware test status for these 30 functions in `docs/UCILIB_MANUAL.md`
+  section 20; 11 untested, marked `[UNTESTED]`.
+- `make check` also compiles the MOD player (`tests/compile_modplay.c`).
+
+### Renamed (compared with the UltimateDemo2026 copies)
+
+`turbo_*` → `uii_turbo_*`, `benchmark_delay` → `uii_turbo_benchmark_delay`,
+`audio_*` → `uii_audio_*`, `reu_fetch` → `uii_audio_reu_fetch`,
+`modplay_*` → `uii_modplay_*`, the player state `modplay` → `uii_modplay`.
+Headers `turbo.h`, `audio.h`, `modplay.h` → `ultimate_turbo_lib.h`,
+`ultimate_audio_lib.h`, `ultimate_modplay_lib.h`. Constants keep their
+names (`TURBO_*`, `AUDIO_*`, `MOD_*`, ...).
+
+### Notes
+
+- These modules target the C64 on an Ultimate 64 (turbo registers,
+  Ultimate Audio). The MOD player chains to the C64 KERNAL IRQ (`$EA31`)
+  and does not run on a C128.
+- Taking the address of the audio functions the MOD player's tick calls
+  makes Oscar64 reject the tick ("Function too complex for interrupt");
+  call them directly.
+
 ## [1.0.0] - 2026-10-02
 
 First release as a separate library. Previously every project carried its

@@ -2383,7 +2383,7 @@ could be made.
 ## 20. Hardware Test Status
 ([Back to contents](#contents))
 
-Status per public function for library 1.0.0 (2026-10-02). **Tested**
+Status per public function (library 1.0.0, 2026-10-02; the turbo, audio and MOD player modules added in 1.1.0 are in the second table). **Tested**
 means that a project which has been run on real Ultimate hardware calls the
 function (UltimateDemo2026, mandelbrot-upic, heartbeat-demo, UBoot64-v2,
 DMBoot, landoficeandfire); that exercises its normal path, not every error
@@ -2514,3 +2514,38 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_unmount_disk` | Tested | used in UBoot64-v2 |
 | `uii_wait_for_uci` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, landoficeandfire, mandelbrot-upic |
 | `uii_write_file` | Tested | used in DMBoot, UBoot64-v2 |
+
+**Turbo, audio and MOD player modules** (1.1.0; tested in UltimateDemo2026 on an Ultimate 64-II, firmware 3.15a):
+
+| Function | Status | Evidence |
+|---|---|---|
+| `uii_audio_channel_ack_irq` | **Untested** | not used by any project yet |
+| `uii_audio_channel_loop` | Tested (indirect) | via the MOD player |
+| `uii_audio_channel_play` | Tested (indirect) | via the MOD player |
+| `uii_audio_channel_set_pan` | **Untested** | not used by any project yet |
+| `uii_audio_channel_set_rate` | Tested (indirect) | via the MOD player |
+| `uii_audio_channel_set_volume` | Tested (indirect) | via the MOD player |
+| `uii_audio_channel_stop` | Tested (indirect) | via the MOD player |
+| `uii_audio_detect` | Tested | used in UltimateDemo2026 |
+| `uii_audio_get_version` | Tested | used in UltimateDemo2026 |
+| `uii_audio_reset` | **Untested** | not used by any project yet |
+| `uii_audio_reu_fetch` | Tested | used in UltimateDemo2026 and the MOD player |
+| `uii_modplay_get_bpm` | **Untested** | not used by any project yet |
+| `uii_modplay_get_order` | **Untested** | not used by any project yet |
+| `uii_modplay_get_pattern` | **Untested** | not used by any project yet |
+| `uii_modplay_get_row` | **Untested** | not used by any project yet |
+| `uii_modplay_init` | Tested | used in UltimateDemo2026 |
+| `uii_modplay_is_playing` | **Untested** | not used by any project yet |
+| `uii_modplay_load` | Tested | used in UltimateDemo2026 |
+| `uii_modplay_pause` | **Untested** | not used by any project yet |
+| `uii_modplay_resume` | **Untested** | not used by any project yet |
+| `uii_modplay_set_master_volume` | Tested | used in UltimateDemo2026 |
+| `uii_modplay_set_stereo` | Tested | used in UltimateDemo2026 |
+| `uii_modplay_start` | Tested | used in UltimateDemo2026 |
+| `uii_modplay_stop` | Tested | used in UltimateDemo2026 |
+| `uii_turbo_benchmark_delay` | Tested (indirect) | via uii_turbo_detect |
+| `uii_turbo_detect` | Tested | used in UltimateDemo2026 |
+| `uii_turbo_fast` | Tested | used in UltimateDemo2026 |
+| `uii_turbo_get` | **Untested** | not used by any project yet |
+| `uii_turbo_set` | Tested | used in UltimateDemo2026 |
+| `uii_turbo_slow` | Tested | used in UltimateDemo2026 |
