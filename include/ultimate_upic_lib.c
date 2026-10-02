@@ -24,8 +24,9 @@ adapted to the same exact pitch. See ultimate_upic_lib.h.
 //   UII_UPIC_INIT: code that runs once (uii_upic_init() and the code
 //                  generator); default UII_UPIC_CODE
 //   UII_UPIC_GEN:  the generated renderer (uii_upic_code[], 2440 bytes,
-//                  256-aligned) and the nybble table (256, aligned);
-//                  bss, default UII_UPIC_BSS
+//                  256-aligned); bss, default UII_UPIC_BSS
+//   UII_UPIC_NYB:  the nybble table (256 bytes, 256-aligned); bss,
+//                  default UII_UPIC_GEN
 #ifndef UII_UPIC_CODE
 #define UII_UPIC_CODE code
 #endif
@@ -41,15 +42,20 @@ adapted to the same exact pitch. See ultimate_upic_lib.h.
 #ifndef UII_UPIC_GEN
 #define UII_UPIC_GEN UII_UPIC_BSS
 #endif
+#ifndef UII_UPIC_NYB
+#define UII_UPIC_NYB UII_UPIC_GEN
+#endif
 #pragma code(UII_UPIC_CODE)
 #pragma data(UII_UPIC_DATA)
-#pragma bss(UII_UPIC_GEN)
+#pragma bss(UII_UPIC_NYB)
 
 // Nybble table: uii_upic_nyb[i] = i >> 4, so `lda nyb,x` turns a byte's
 // high nybble (the odd pixel) into a $D020 value. Page-aligned so the
 // indexed load never crosses a page (the renderer is cycle-exact).
 static char uii_upic_nyb[256];
 #pragma align(uii_upic_nyb, 256)
+
+#pragma bss(UII_UPIC_GEN)
 
 // Generated line renderer, called once per raster line (see the layout
 // in uii_upic_generate()). Page-aligned so the delay loop's branch never

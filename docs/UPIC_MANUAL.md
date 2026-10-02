@@ -264,7 +264,8 @@ Besides the section hook every module has (`UII_UPIC_CODE`, `_DATA`,
 | Define | Default | Holds |
 |---|---|---|
 | `UII_UPIC_INIT` | `UII_UPIC_CODE` | Code that runs once: `uii_upic_init()` and the generator |
-| `UII_UPIC_GEN` | `UII_UPIC_BSS` | The generated renderer (`uii_upic_code[]`, 2440 bytes) and the nybble table (256 bytes), both page-aligned |
+| `UII_UPIC_GEN` | `UII_UPIC_BSS` | The generated renderer (`uii_upic_code[]`, 2440 bytes, page-aligned) |
+| `UII_UPIC_NYB` | `UII_UPIC_GEN` | The nybble table (256 bytes, page-aligned) |
 
 Code that runs while the picture is shown must be in normal RAM or under
 the KERNAL ROM with the ROMs out, not under I/O (`$D000`-`$DFFF`).
