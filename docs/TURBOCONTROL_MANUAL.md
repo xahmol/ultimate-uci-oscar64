@@ -65,8 +65,8 @@ not been verified either way.
 
 **Forced 1 MHz window:** the Ultimate 64 runs the CPU at 1 MHz for about
 2 seconds after every CPU reset, whatever `$D031` says (measured
-2026-10-02 on an Ultimate 64-II, firmware 3.15a, program started over
-REST; the window also follows IEC bus activity briefly). Starting a
+2026-10-02 on an Ultimate 64-II and an Ultimate 64 Elite, firmware 3.15a,
+program started over REST; the window also follows IEC bus activity briefly). Starting a
 program from the Ultimate menu or REST includes a reset, so any speed
 measurement at program start runs inside that window. Both detection
 methods have to allow for it.
@@ -390,18 +390,20 @@ exactly 64,764 cycles (36 outer passes of 1799; every loop-back an
 absolute `jmp`, no I/O access inside the loop, interrupts off), then
 reads `$D012`:
 
-| CPU | Expected lines | Measured (Ultimate 64-II, 3.15a) |
-|---|---|---|
-| 64 MHz (63 cycles per phi2) | 64764 / (63 × 63) = 16.3 | 16 |
-| 48 MHz (47 cycles per phi2) | 64764 / (63 × 47) = 21.9 | 21 (index 14) |
-| 1 MHz | 1028 (ends 92 lines after the start line, mod 256) | 92 |
+| CPU | Expected lines | Ultimate 64-II (3.15a) | Ultimate 64 Elite (3.15a) |
+|---|---|---|---|
+| 64 MHz (63 cycles per phi2) | 64764 / (63 × 63) = 16.3 | 16 (index 15) | — |
+| 48 MHz (47 cycles per phi2) | 64764 / (63 × 47) = 21.9 | 21 (index 14) | 21 (index 15) |
+| 40 MHz (39 cycles per phi2) | 64764 / (63 × 39) = 26.4 | — | 26 (index 14), rejected |
+| 1 MHz | 1028 (ends 92 lines after the start line, mod 256) | 92 | 92 |
 
 A loop entirely at 1 MHz always ends 92 lines (mod 256) after the start
 line, which is rejected. Occasional 18-line results at 64 MHz were seen
 while a PC read C64 memory over the REST API (DMA pauses the CPU); still
 below the 19-line threshold. `tests/speed_probe.c` (`make speedprobe`)
 logs these values on hardware, including the first 12 s after start.
-Not yet run on a real 48 MHz Ultimate 64 / Elite I or on NTSC.
+The forced 1 MHz window lasted about 2.0 s on both machines. Not yet run
+on NTSC.
 
 ### Why CIA TOD timing does work
 

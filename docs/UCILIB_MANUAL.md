@@ -2547,7 +2547,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_turbo_detect` | Tested | used in UltimateDemo2026 |
 | `uii_turbo_fast` | Tested | used in UltimateDemo2026 |
 | `uii_turbo_get` | **Untested** | not used by any project yet |
-| `uii_turbo_probe_lines` | Tested | 1.2.0; tests/speed_probe.c on an Ultimate 64-II (16 lines at 64 MHz, 21 at 48 MHz) |
-| `uii_turbo_probe_max` | Tested | 1.2.0; UltimateDemo2026 on an Ultimate 64-II (64 MHz); 48 MHz only via speed index 14, not yet on an Elite I |
+| `uii_turbo_probe_lines` | Tested | 1.2.0; tests/speed_probe.c on an Ultimate 64-II (16 lines at 64 MHz, 21 at 48 MHz) and an Ultimate 64 Elite (21 at 48 MHz, 26 at 40 MHz) |
+| `uii_turbo_probe_max` | Tested | 1.2.0; UltimateDemo2026 (incl. its e2e test) on an Ultimate 64-II (64 MHz) and an Ultimate 64 Elite (48 MHz) |
 | `uii_turbo_set` | Tested | used in UltimateDemo2026 |
 | `uii_turbo_slow` | Tested | used in UltimateDemo2026 |
