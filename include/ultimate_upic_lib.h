@@ -221,7 +221,7 @@ char uii_upic_save(const char *filename, const char *palette, const char *text, 
 /*
   Save the picture as a v1.3 .upic file in the current UCI directory.
   palette: 48 bytes (16 x RGB). text: 160 characters (4 lines of 40), or
-  NULL for spaces. overwrite: 0 fails if the file exists, 1 replaces it.
+  NULL for 160 zero bytes. overwrite: 0 fails if the file exists, 1 replaces it.
   Returns 1 on success, 0 on error (uii_status holds the firmware's
   message). Uses uii_write_file_from(), so no heap or large data queue.
 */

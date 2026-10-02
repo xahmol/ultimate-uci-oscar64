@@ -245,7 +245,7 @@ v1.2 writes `.upic` as the bare 49152-byte bitmap with the palette in a
 separate `.pal` file.
 
 **`uii_upic_save`** writes a v1.3 file. `palette`: 48 bytes. `text`: 160
-characters, or NULL for spaces. `overwrite`: 0 fails if the file exists
+characters, or NULL for zero bytes. `overwrite`: 0 fails if the file exists
 (open attribute `0x06`), 1 replaces it (`0x0A`). Returns 1 on success, 0 on
 error (`uii_status` holds the firmware's message).
 

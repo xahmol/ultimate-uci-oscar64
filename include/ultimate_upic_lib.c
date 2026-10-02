@@ -512,14 +512,10 @@ char uii_upic_save(const char *filename, const char *palette, const char *text, 
 	if (text)
 		uii_write_file_from(text, 160);
 	else
-	{
-		// No text: 160 spaces, written 40 at a time from a small stack
-		// buffer instead of keeping 160 bytes of spaces in memory.
-		char spaces[40];
-		memset(spaces, 0x20, 40);
-		for (c = 0; c < 4; c++)
-			uii_write_file_from(spaces, 40);
-	}
+		// No text: 160 zero bytes, 32 at a time from the header template's
+		// zero-filled tail (offsets 16-47), so no buffer is needed.
+		for (c = 0; c < 5; c++)
+			uii_write_file_from(uii_upic_header0 + 16, 32);
 	uii_write_file_from(palette, UII_UPIC_PALETTE);
 
 	for (c = 0; c < UII_UPIC_COLUMNS; c++)
