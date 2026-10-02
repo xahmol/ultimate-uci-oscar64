@@ -32,6 +32,8 @@ void uii_open_file(char attrib, char *filename);     // Open file; attrib: 0x01=
 void uii_close_file(void);                           // Close currently open file
 void uii_write_file(char *data, unsigned length);    // Write up to DATA_QUEUE_SZ bytes to open file
 void uii_read_file(unsigned length);                 // Request up to length bytes from open file
+void uii_write_file_from(const char *data, unsigned length); // Write from memory, no command buffer copy (1.3.0)
+unsigned uii_read_file_to(char *dest, unsigned length);     // Read into memory, bypassing uii_data[]; returns bytes read (1.3.0)
 void uii_seek_file(char posL, char posML, char posMH, char posH); // [UNTESTED] Seek to 4-byte file position
 void uii_file_info();                                // Get info on currently open file
 void uii_file_stat(char *filename);                  // Get file attributes by name

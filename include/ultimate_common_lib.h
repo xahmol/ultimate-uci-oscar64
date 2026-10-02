@@ -22,9 +22,9 @@ Patches and pull requests are welcome
 // incompatible API changes, MINOR for new functions, PATCH for fixes.
 // Must match the VERSION file; `make check` verifies this.
 #define UII_LIB_VERSION_MAJOR 1
-#define UII_LIB_VERSION_MINOR 2
+#define UII_LIB_VERSION_MINOR 3
 #define UII_LIB_VERSION_PATCH 0
-#define UII_LIB_VERSION "1.2.0"
+#define UII_LIB_VERSION "1.3.0"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -244,12 +244,14 @@ void uii_identify(void);
 void uii_echo(void);  // [UNTESTED]
 void uii_getinterfacecount(void);  // [UNTESTED]
 void uii_sendcommand(char *bytes, unsigned count);
+void uii_sendcommand_data(char *bytes, unsigned count, const char *data, unsigned datacount);  // header + payload straight from memory (1.3.0)
 void uii_accept(void);
 char uii_isdataavailable(void);
 char uii_ismoredataavailable(void);
 char uii_isstatusdataavailable(void);
 void uii_abort(void);
 unsigned uii_readdata(void);
+unsigned uii_readdata_to(char *dest, unsigned max);  // reply data straight into memory (1.3.0)
 unsigned uii_readstatus(void);
 
 #pragma compile("ultimate_common_lib.c")

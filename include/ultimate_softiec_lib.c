@@ -8,8 +8,23 @@ See ultimate_softiec_lib.h and docs/UCILIB_MANUAL.md.
 #include "ultimate_common_lib.h"
 #include "ultimate_softiec_lib.h"
 
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_SOFTIEC_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_SOFTIEC_CODE
+#define UII_SOFTIEC_CODE code
+#endif
+#ifndef UII_SOFTIEC_DATA
+#define UII_SOFTIEC_DATA data
+#endif
+#ifndef UII_SOFTIEC_BSS
+#define UII_SOFTIEC_BSS bss
+#endif
+#pragma code(UII_SOFTIEC_CODE)
+#pragma data(UII_SOFTIEC_DATA)
+#pragma bss(UII_SOFTIEC_BSS)
 
 // ---------------------------------------------------------------------------
 // Title:       Identify the SoftIEC target
@@ -256,3 +271,7 @@ void uii_softiec_get_iecname(const char *fatname)
 
 	uii_send_with_name(TARGET_SOFTIEC, header, sizeof(header), fatname);
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

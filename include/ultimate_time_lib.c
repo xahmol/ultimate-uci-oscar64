@@ -19,8 +19,23 @@ Patches and pull requests are welcome
 #include "ultimate_time_lib.h"
 
 // Switching code generation to bank 0 common routine section
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_TIME_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_TIME_CODE
+#define UII_TIME_CODE code
+#endif
+#ifndef UII_TIME_DATA
+#define UII_TIME_DATA data
+#endif
+#ifndef UII_TIME_BSS
+#define UII_TIME_BSS bss
+#endif
+#pragma code(UII_TIME_CODE)
+#pragma data(UII_TIME_DATA)
+#pragma bss(UII_TIME_BSS)
 
 void uii_get_time(void)
 // Get the current time
@@ -71,3 +86,7 @@ void uii_set_time(char *data)
 	uii_readstatus();
 	uii_accept();
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

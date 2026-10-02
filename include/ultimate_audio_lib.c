@@ -7,8 +7,23 @@ See ultimate_audio_lib.h for API documentation.
 #include <c64/reu.h>
 #include "ultimate_audio_lib.h"
 
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_AUDIO_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_AUDIO_CODE
+#define UII_AUDIO_CODE code
+#endif
+#ifndef UII_AUDIO_DATA
+#define UII_AUDIO_DATA data
+#endif
+#ifndef UII_AUDIO_BSS
+#define UII_AUDIO_BSS bss
+#endif
+#pragma code(UII_AUDIO_CODE)
+#pragma data(UII_AUDIO_DATA)
+#pragma bss(UII_AUDIO_BSS)
 
 // ---------------------------------------------------------------
 // Channel base address table
@@ -242,3 +257,7 @@ void uii_audio_channel_ack_irq(char ch) {
 void uii_audio_reu_fetch(void *c64dest, unsigned long reu_src, unsigned len) {
     reu_load(reu_src, (volatile char *)c64dest, len);
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

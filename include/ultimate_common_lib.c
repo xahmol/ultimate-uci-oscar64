@@ -20,8 +20,23 @@ Patches and pull requests are welcome
 #include "ultimate_common_lib.h"
 
 // Switching code generation to bank 0 common routine section
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_COMMON_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_COMMON_CODE
+#define UII_COMMON_CODE code
+#endif
+#ifndef UII_COMMON_DATA
+#define UII_COMMON_DATA data
+#endif
+#ifndef UII_COMMON_BSS
+#define UII_COMMON_BSS bss
+#endif
+#pragma code(UII_COMMON_CODE)
+#pragma data(UII_COMMON_DATA)
+#pragma bss(UII_COMMON_BSS)
 
 char uii_status[STATUS_QUEUE_SZ + 1];
 char uii_data[DATA_QUEUE_SZ + 1];
@@ -378,6 +393,22 @@ void uii_sendcommand(char *bytes, unsigned count)
 // Input: bytes - the command bytes to send
 //        count - the number of bytes to send
 {
+	uii_sendcommand_data(bytes, count, NULL, 0);
+}
+
+void uii_sendcommand_data(char *bytes, unsigned count, const char *data, unsigned datacount)
+// Send a command whose payload comes straight from memory: the command
+// header from `bytes` (count bytes, bytes[0] is replaced by the target as
+// in uii_sendcommand()), then `datacount` bytes from `data`, without
+// copying them into a buffer first. For large transfers such as file
+// writes (uii_write_file_from()) where neither the heap nor the shared
+// command buffer should hold the data. The retry after an ERROR resends
+// both parts. Library 1.3.0.
+// Input: bytes     - the command header
+//        count     - number of header bytes
+//        data      - payload, or NULL
+//        datacount - number of payload bytes
+{
 	unsigned x;
 	char success = 0;
 
@@ -435,6 +466,9 @@ void uii_sendcommand(char *bytes, unsigned count)
 		x = 0;
 		while (x < count)
 			uii_reg_write.cmddata = bytes[x++];
+		x = 0;
+		while (x < datacount)
+			uii_reg_write.cmddata = data[x++];
 
 		// Send PUSH_CMD
 		uii_logtext("\npushing command...");
@@ -548,6 +582,21 @@ unsigned uii_readdata(void)
 	return count;
 }
 
+unsigned uii_readdata_to(char *dest, unsigned max)
+// Read the reply data of the last command straight into memory, instead
+// of into uii_data[] (which holds at most DATA_QUEUE_SZ bytes). For file
+// reads (uii_read_file_to()). Reads at most max bytes; any further reply
+// bytes are left for uii_accept() to discard. Library 1.3.0.
+// Input:  dest - destination buffer
+//         max  - its size in bytes
+// Output: number of bytes stored
+{
+	unsigned count = 0;
+	while (count < max && uii_isdataavailable())
+		dest[count++] = uii_reg_read.respdata;
+	return count;
+}
+
 unsigned uii_readstatus(void)
 // Read status from the UCI
 {
@@ -574,3 +623,7 @@ unsigned uii_readstatus(void)
 	uii_status[count] = 0;
 	return count;
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

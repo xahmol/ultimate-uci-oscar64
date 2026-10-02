@@ -22,9 +22,10 @@ like the original.
 
 Manuals: [`docs/UCILIB_MANUAL.md`](docs/UCILIB_MANUAL.md) (UCI: registers,
 protocol, every function, firmware command coverage, test status),
-[`docs/TURBOCONTROL_MANUAL.md`](docs/TURBOCONTROL_MANUAL.md) (turbo) and
+[`docs/TURBOCONTROL_MANUAL.md`](docs/TURBOCONTROL_MANUAL.md) (turbo),
 [`docs/ULTIMATEAUDIO_MANUAL.md`](docs/ULTIMATEAUDIO_MANUAL.md) (audio and MOD
-player).
+player) and [`docs/UPIC_MANUAL.md`](docs/UPIC_MANUAL.md) (Upic picture mode,
+based on Aleksi Eeben's Upic and Christian Gleissner's 48 MHz path).
 
 ## Files
 
@@ -39,6 +40,7 @@ player).
 | `include/ultimate_turbo_lib.h/.c` | U64 turbo speed control and detection |
 | `include/ultimate_audio_lib.h/.c` | Ultimate Audio 7-voice DMA layer, REU fetch |
 | `include/ultimate_modplay_lib.h/.c` | ProTracker MOD player (uses audio + DOS) |
+| `include/ultimate_upic_lib.h/.c` | Upic 384x256 16-color picture mode: display (48/64 MHz), drawing, .upic files (uses common, DOS, turbo) |
 
 Each header has a `#pragma compile(...)` for its `.c`, so a program only
 includes the headers it needs; Oscar64 drops functions that are never

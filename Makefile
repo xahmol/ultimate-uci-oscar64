@@ -15,7 +15,7 @@ CFLAGS  = -i=include -O2 -dNOFLOAT -n
 LIBSRCS = $(wildcard include/*.c include/*.h)
 VERSION = $(shell cat VERSION)
 
-.PHONY: all check check-version check-modplay-api smoke speedprobe clean
+.PHONY: all check check-version check-modplay-api smoke speedprobe upictest clean
 all: check
 
 check: check-version build/compile_all64.prg build/compile_all128.prg build/compile_modplay64.prg check-modplay-api
@@ -52,6 +52,14 @@ build/compile_all128.prg: build/compile_all.c
 	$(OSCAR64) $(CFLAGS) -i=include -tm=c128 -o=$@ $<
 
 smoke: build/smoke64.prg
+
+# Hardware test of the Upic module (display, drawing, save/load). Split
+# picture layout: columns 0-19 at $E000, the rest from $2400.
+upictest: build/upictest.prg
+
+build/upictest.prg: tests/upic_test.c $(LIBSRCS)
+	@mkdir -p build
+	$(OSCAR64) $(CFLAGS) -i=include -tm=c64 -dUII_UPIC_RELOC_COLS=20 -dUII_UPIC_RELOC_BASE=0xE000 -dUII_UPIC_GEN=upicgen -o=$@ $<
 
 # Hardware test of the raster-timed speed probe (Ultimate 64, PAL).
 speedprobe: build/speedprobe.prg

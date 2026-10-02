@@ -5,6 +5,43 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.3.0] - 2026-10-02
+
+### Added
+
+- **Upic module** (`ultimate_upic_lib`, `docs/UPIC_MANUAL.md`): Aleksi
+  Eeben's 384x256, 16-color Upic picture mode. Display with an exact
+  one-dot pixel pitch on both the 64 MHz path (Elite II / C64 Ultimate,
+  every 8th pixel pair from a per-line patched immediate, after Aleksi's
+  Upic v1.3) and the 48 MHz path (Ultimate 64 / Elite I, 3 of every 4
+  pixels, after Christian Gleissner's mandelbrot-upic PR #2, with every
+  4th group patched), chosen automatically with `uii_turbo_probe_max()`.
+  The line renderer is generated at run time from the column addresses,
+  so any layout works (`UII_UPIC_BITMAP`, `UII_UPIC_RELOC_COLS`,
+  `UII_UPIC_RELOC_BASE`). Polled frames and Aleksi's raster-IRQ viewer;
+  drawing (plot, read pixel, masked plot, clear, 8x8 text, hex); `.upic`
+  save and load in the Upic v1.3 header format (palette and text in the
+  file), loading the converter's bare bitmaps too. Credits: Aleksi Eeben
+  (Upic v1.3 display.s/drawing.s, shared privately 2026-10-02) and
+  Christian Gleissner.
+- `uii_sendcommand_data()` and `uii_readdata_to()`: send a command whose
+  payload comes straight from memory, and read a reply straight into
+  memory, without the shared command buffer or `uii_data[]`.
+- `uii_write_file_from()` and `uii_read_file_to()`: file I/O on top of
+  those (no heap, no large data queue); `uii_read_file_to()` follows the
+  firmware's 512-byte packets.
+- Section hook for every module (`UII_<MODULE>_CODE`/`_DATA`/`_BSS` on the
+  compiler command line): place library code in project sections without
+  editing the submodule (issue #1).
+- `tests/upic_test.c` (`make upictest`): hardware test of the Upic module
+  and the streaming file I/O.
+
+### Fixed (documentation)
+
+- File open attribute `0x0E` does not overwrite an existing file: with
+  `FA_CREATE_NEW` set the firmware (FatFS) answers `FILE EXISTS`. Overwrite
+  is `0x0A` (`FA_WRITE | FA_CREATE_ALWAYS`).
+
 ## [1.2.0] - 2026-10-02
 
 ### Added
