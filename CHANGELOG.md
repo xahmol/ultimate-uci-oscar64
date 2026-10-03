@@ -5,7 +5,7 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
-## [1.3.0] - 2026-10-02
+## [1.3.0] - 2026-10-03
 
 ### Added
 
@@ -18,12 +18,19 @@ functions, PATCH for fixes that keep the API.
   4th group patched), chosen automatically with `uii_turbo_probe_max()`.
   The line renderer is generated at run time from the column addresses,
   so any layout works (`UII_UPIC_BITMAP`, `UII_UPIC_RELOC_COLS`,
-  `UII_UPIC_RELOC_BASE`). Polled frames and Aleksi's raster-IRQ viewer;
-  drawing (plot, read pixel, clear, 8x8 text, hex); `.upic`
-  save and load in the Upic v1.3 header format (palette and text in the
-  file), loading the converter's bare bitmaps too. Credits: Aleksi Eeben
-  (Upic v1.3 display.s/drawing.s, shared privately 2026-10-02) and
-  Christian Gleissner.
+  `UII_UPIC_RELOC_BASE`). Polled frames and Aleksi's raster-IRQ viewer
+  (with a per-frame hook), both limited to a display window of rows
+  with `uii_upic_set_window()` (e.g. a progress band while the rest of
+  the CPU time goes to computing); drawing (plot, read pixel, clear, 8x8
+  text, hex); `.upic` save and load in the locked Upic v1.3 format
+  (256-byte header with palette, text, UI colours and time stamp),
+  loading the converter's bare bitmaps too.
+  **Code contributed by Aleksi Eeben**, creator of Upic: the display,
+  IRQ viewer and drawing routines are based on his Upic v1.3 source
+  (`display.s`, `drawing.s`), which he shared and allowed to be
+  published here (2026-10-03; his ActualPlot only, without Upic Paint's
+  tool-panel check), and the file format is his. The 48 MHz path is
+  Christian Gleissner's.
 - `uii_sendcommand_data()` and `uii_readdata_to()`: send a command whose
   payload comes straight from memory, and read a reply straight into
   memory, without the shared command buffer or `uii_data[]`.

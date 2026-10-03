@@ -12,13 +12,15 @@ Commodore 64 Ultimate**, for the
 
 Not every function has been used on real hardware yet: those carry
 `[UNTESTED]` in the headers, and section 20 of the UCI manual lists the
-status of each function (77 of 152 untested in 1.2.0, including the whole
+status of each function (78 of 170 untested in 1.3.0, including the whole
 HTTP target).
 
 Based on the Ultimate II Dos Lib by Scott Hutter and Francesco Sblendorio
 (https://github.com/xlar54/ultimateii-dos-lib). Adapted for Oscar64 by
-Xander Mol, with fixes by Christian Gleissner. Licensed under the GNU GPL v3,
-like the original.
+Xander Mol, with fixes by Christian Gleissner. The Upic module is based on
+code contributed by Aleksi Eeben, creator of Upic (his Upic v1.3
+`display.s` and `drawing.s`, published here with his permission).
+Licensed under the GNU GPL v3, like the original.
 
 Manuals: [`docs/UCILIB_MANUAL.md`](docs/UCILIB_MANUAL.md) (UCI: registers,
 protocol, every function, firmware command coverage, test status),

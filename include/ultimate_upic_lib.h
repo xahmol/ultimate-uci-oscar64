@@ -157,7 +157,7 @@ void uii_upic_irq_start(void);
   first.
 */
 
-void uii_upic_irq_stop(void);                   // [UNTESTED]
+void uii_upic_irq_stop(void);
 /*
   Disable the raster interrupt. Leaves interrupts disabled and the ROMs
   banked out; restoring them is up to the caller.
