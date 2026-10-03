@@ -7,8 +7,23 @@ See ultimate_turbo_lib.h for API documentation.
 #include "ultimate_turbo_lib.h"
 #include <c64/cia.h>
 
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_TURBO_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_TURBO_CODE
+#define UII_TURBO_CODE code
+#endif
+#ifndef UII_TURBO_DATA
+#define UII_TURBO_DATA data
+#endif
+#ifndef UII_TURBO_BSS
+#define UII_TURBO_BSS bss
+#endif
+#pragma code(UII_TURBO_CODE)
+#pragma data(UII_TURBO_DATA)
+#pragma bss(UII_TURBO_BSS)
 
 // ---------------------------------------------------------------
 // Register addresses
@@ -216,3 +231,7 @@ char uii_turbo_probe_max(void)
     TURBO_D030 = saved_enable;
     return result;
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

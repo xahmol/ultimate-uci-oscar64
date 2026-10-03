@@ -12,8 +12,23 @@ YET (library 1.0.0).
 #include "ultimate_common_lib.h"
 #include "ultimate_http_lib.h"
 
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_HTTP_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_HTTP_CODE
+#define UII_HTTP_CODE code
+#endif
+#ifndef UII_HTTP_DATA
+#define UII_HTTP_DATA data
+#endif
+#ifndef UII_HTTP_BSS
+#define UII_HTTP_BSS bss
+#endif
+#pragma code(UII_HTTP_CODE)
+#pragma data(UII_HTTP_DATA)
+#pragma bss(UII_HTTP_BSS)
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -390,3 +405,7 @@ int uii_http_status_code(void)
 			return -1;
 	return (s[0] - 0x30) * 100 + (s[1] - 0x30) * 10 + (s[2] - 0x30);
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

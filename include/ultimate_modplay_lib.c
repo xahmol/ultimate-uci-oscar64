@@ -14,8 +14,23 @@ reference for period/timer maths and effect behaviour).
 #include "ultimate_common_lib.h"
 #include "ultimate_dos_lib.h"
 
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_MODPLAY_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_MODPLAY_CODE
+#define UII_MODPLAY_CODE code
+#endif
+#ifndef UII_MODPLAY_DATA
+#define UII_MODPLAY_DATA data
+#endif
+#ifndef UII_MODPLAY_BSS
+#define UII_MODPLAY_BSS bss
+#endif
+#pragma code(UII_MODPLAY_CODE)
+#pragma data(UII_MODPLAY_DATA)
+#pragma bss(UII_MODPLAY_BSS)
 
 // ---------------------------------------------------------------
 // Global player state
@@ -1237,3 +1252,7 @@ char uii_modplay_init(unsigned long reu_addr)
 
     return 1;
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

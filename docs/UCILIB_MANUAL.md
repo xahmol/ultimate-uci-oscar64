@@ -353,9 +353,53 @@ These flags combine to specify how a file is opened:
 |-------|---------|
 | `0x01` | Read existing file |
 | `0x06` | Create new file for writing (`FA_WRITE` \| `FA_CREATE_NEW`) |
-| `0x0E` | Write, creating or overwriting (`FA_WRITE` \| `FA_CREATE_NEW` \| `FA_CREATE_ALWAYS`) |
+| `0x0A` | Write, creating or overwriting (`FA_WRITE` \| `FA_CREATE_ALWAYS`) |
+
+`0x0E` (all three write flags) does **not** overwrite: the file system
+follows FatFS, where `FA_CREATE_NEW` fails with `FILE EXISTS` when the file
+exists, whatever else is set. Verified on an Ultimate 64 Elite (firmware
+3.15a), 2026-10-02; earlier versions of this manual listed `0x0E` as the
+overwrite combination.
 
 ---
+
+### Placing library code in project sections (1.3.0)
+
+Each module selects its sections through macros, so a project can put a
+module's code, data or bss into its own memory region without editing the
+library (it is a git submodule):
+
+```c
+#ifndef UII_DOS_CODE
+#define UII_DOS_CODE code
+#endif
+#pragma code(UII_DOS_CODE)        // likewise _DATA (data) and _BSS (bss)
+```
+
+The macro names are `UII_<MODULE>_CODE`, `UII_<MODULE>_DATA` and
+`UII_<MODULE>_BSS`, with `<MODULE>` one of `COMMON`, `DOS`, `TIME`,
+`NETWORK`, `SOFTIEC`, `HTTP`, `TURBO`, `AUDIO`, `MODPLAY`, `UPIC`. Set them
+on the compiler command line (the library's `.c` files are separate
+translation units, so a `#define` in the project's source does not reach
+them), and declare the sections themselves in the project before the
+library is compiled:
+
+```c
+// project source, e.g. main.c
+#pragma section(bcode2, 0)
+#pragma section(bdata2, 0)
+#pragma region(bank2, 0xc000, 0xd000, , , {bcode2, bdata2})
+```
+
+```make
+CFLAGS += -dUII_DOS_CODE=bcode2 -dUII_DOS_DATA=bdata2
+```
+
+Every module switches back to `code`/`data`/`bss` at its end. Checked with
+Oscar64 1.32.273: a macro inside `#pragma code(...)` resolves to the section
+name, and a section declared in the main source file is visible to the
+library's translation unit. (A computed `#include UII_..._HEADER` with the
+section declarations did not work.)
 
 ## 5. Protocol Flow
 ([Back to contents](#contents))
@@ -579,6 +623,34 @@ void uii_sendcommand(char *bytes, unsigned count);
 | `count` | Total number of bytes to send, including the target and opcode bytes |
 
 **Notes:** Waits for `STATE` idle before sending; a reply still queued from an earlier command is released with `DATA_ACC` instead of blocking the wait forever. After `PUSH_CMD` it checks `ERROR` (status bit 3): if set, it writes `CLR_ERR` and sends the command again. Otherwise it waits until `CMD_BUSY` clears and `STATE` leaves "command busy", so the reply is available when the caller reads it. See §5, [Start-up hang fixed 2026-09-28](#start-up-hang-fixed-2026-09-28), for why each of these steps is needed. This is the lowest-level send function; all higher-level functions call it internally.
+
+---
+
+### `uii_sendcommand_data` *1.3.0*
+
+```c
+void uii_sendcommand_data(char *bytes, unsigned count, const char *data, unsigned datacount);
+```
+
+**Purpose:** Like `uii_sendcommand()`, but the command's payload comes
+straight from memory: first `count` header bytes from `bytes` (`bytes[0]`
+is replaced by the target), then `datacount` bytes from `data`, without
+copying them into a buffer. Same handshake, same retry after an ERROR
+(both parts are resent). `uii_sendcommand(b, n)` is
+`uii_sendcommand_data(b, n, NULL, 0)`. Used by `uii_write_file_from()`.
+
+---
+
+### `uii_readdata_to` *1.3.0*
+
+```c
+unsigned uii_readdata_to(char *dest, unsigned max);
+```
+
+**Purpose:** Read the reply data of the last command into `dest` (at most
+`max` bytes) instead of `uii_data[]`, which holds only `DATA_QUEUE_SZ`
+bytes. Returns the number of bytes stored. Reads one firmware packet; see
+`uii_read_file_to()` for a multi-packet loop.
 
 ---
 
@@ -912,6 +984,36 @@ void uii_write_file(char *data, unsigned length);
 **Status:** `"00,OK"`, `"85,NO FILE OPEN"`, or `"ACCESS DENIED"`.
 
 **Caution:** The total command packet size is `length + 4`. The UCI command queue is `DATA_QUEUE_SZ` (512) bytes, so `length` must not exceed `DATA_QUEUE_SZ - 4` = 508 bytes per call. For larger transfers, call in a loop. In practice, `SAVE_BUF_SIZE` (500) is used in this project to provide a safe margin.
+
+---
+
+### `uii_write_file_from` *1.3.0*
+
+```c
+void uii_write_file_from(const char *data, unsigned length);
+```
+
+**Purpose:** Write `length` bytes from memory to the open file, streamed
+straight into the command register (`uii_sendcommand_data()`): no heap, no
+shared command buffer. Keep `length` to a few hundred bytes per call (the
+Upic module writes 256). Tested: 49408-byte files written in 256-byte calls
+on an Ultimate 64 Elite and an Elite II, firmware 3.15a.
+
+---
+
+### `uii_read_file_to` *1.3.0*
+
+```c
+unsigned uii_read_file_to(char *dest, unsigned length);
+```
+
+**Purpose:** Read up to `length` bytes from the open file straight into
+memory, bypassing `uii_data[]`. Handles the firmware's packets of up to 512
+bytes (acknowledging "data more" until `length` bytes or the end of the
+reply), then reads the status and acknowledges. Returns the number of bytes
+received: less than `length` at the end of the file. Tested with 256- and
+1024-byte reads (the latter two packets) on an Ultimate 64 Elite, firmware
+3.15a.
 
 ---
 
@@ -2389,7 +2491,7 @@ could be made.
 ## 20. Hardware Test Status
 ([Back to contents](#contents))
 
-Status per public function (library 1.0.0, 2026-10-02; the turbo, audio and MOD player modules added in 1.1.0 are in the second table). **Tested**
+Status per public function (library 1.0.0, 2026-10-02; the turbo, audio and MOD player modules added in 1.1.0 are in the second table, the Upic module added in 1.3.0 in the third). **Tested**
 means that a project which has been run on real Ultimate hardware calls the
 function (UltimateDemo2026, mandelbrot-upic, heartbeat-demo, UBoot64-v2,
 DMBoot, landoficeandfire); that exercises its normal path, not every error
@@ -2476,7 +2578,9 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_open_file` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, heartbeat-demo, landoficeandfire, mandelbrot-upic |
 | `uii_parse_deviceinfo` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_read_file` | Tested | used in DMBoot, UBoot64-v2 |
+| `uii_read_file_to` | Tested | 1.3.0; tests/upic_test.c: 256- and 1024-byte reads (two packets) on an Ultimate 64 Elite and an Elite II (fw 3.15a) |
 | `uii_readdata` | Tested | used in DMBoot, UBoot64-v2, mandelbrot-upic |
+| `uii_readdata_to` | Tested (indirect) | 1.3.0; via uii_read_file_to |
 | `uii_readstatus` | Tested | used in DMBoot, UBoot64-v2, mandelbrot-upic |
 | `uii_reboot` | Tested | used in landoficeandfire |
 | `uii_rename_file` | **Untested** | not used by any project yet |
@@ -2490,6 +2594,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_seek_file` | **Untested** | not used by any project yet |
 | `uii_send_with_name` | Tested (indirect) | via uii_softiec_get_fatname and the DOS name commands |
 | `uii_sendcommand` | Tested | used in DMBoot, UBoot64-v2, landoficeandfire, mandelbrot-upic |
+| `uii_sendcommand_data` | Tested (indirect) | 1.3.0; via uii_write_file_from |
 | `uii_set_time` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_setipaddr` | **Untested** | not used by any project yet |
 | `uii_setpalette` | Tested | used in UltimateDemo2026, landoficeandfire, mandelbrot-upic |
@@ -2520,6 +2625,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_unmount_disk` | Tested | used in UBoot64-v2 |
 | `uii_wait_for_uci` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, landoficeandfire, mandelbrot-upic |
 | `uii_write_file` | Tested | used in DMBoot, UBoot64-v2 |
+| `uii_write_file_from` | Tested | 1.3.0; upic_test.c, 49408-byte .upic files on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
 
 **Turbo, audio and MOD player modules** (1.1.0; tested in UltimateDemo2026 on an Ultimate 64-II, firmware 3.15a):
 
@@ -2557,3 +2663,23 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_turbo_probe_max` | Tested | 1.2.0; UltimateDemo2026 (incl. its e2e test) on an Ultimate 64-II (64 MHz) and an Ultimate 64 Elite (48 MHz) |
 | `uii_turbo_set` | Tested | used in UltimateDemo2026 |
 | `uii_turbo_slow` | Tested | used in UltimateDemo2026 |
+
+The Upic module (`ultimate_upic_lib`, library 1.3.0, see `docs/UPIC_MANUAL.md`):
+
+| Function | Status | Evidence |
+|---|---|---|
+| `uii_upic_clear` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_clearchar` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_column` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_getpixel` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_init` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_irq_start` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_irq_stop` | Tested | 1.3.0; mandelbrot-upic 1.2.0 live view (stops the viewer after every picture, then polled display) on an Ultimate 64 Elite II and an Ultimate 64 Elite, fw 3.15a |
+| `uii_upic_load` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_plot` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_putchar` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_save` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a; `uii_upic_save_colors`/`uii_upic_save_time` header fields read back over FTP (Elite) |
+| `uii_upic_set_window` | Tested | 1.3.0; tests/upic_test.c (IRQ viewer, rows 120-135) and the mandelbrot-upic 1.2.0 Bar live view (rows 124-131, roll-out to the full picture) on an Ultimate 64 Elite II and an Ultimate 64 Elite, fw 3.15a |
+| `uii_upic_set_delay` | **Untested** | 1.3.0; the default delays were right first time, so it was never needed on hardware |
+| `uii_upic_show_frame` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
+| `uii_upic_writehex` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |

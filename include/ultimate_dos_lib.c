@@ -19,8 +19,23 @@ Patches and pull requests are welcome
 #include "ultimate_dos_lib.h"
 
 // Switching code generation to bank 0 common routine section
-#pragma code(code)
-#pragma data(data)
+// Section hook (library 1.3.0): a project can place this module's code,
+// data and bss in its own sections by defining them in its build, e.g.
+// -dUII_DOS_CODE=mycode. The sections themselves must be declared by
+// the project (#pragma section) before this file is compiled. See
+// docs/UCILIB_MANUAL.md, "Placing library code in project sections".
+#ifndef UII_DOS_CODE
+#define UII_DOS_CODE code
+#endif
+#ifndef UII_DOS_DATA
+#define UII_DOS_DATA data
+#endif
+#ifndef UII_DOS_BSS
+#define UII_DOS_BSS bss
+#endif
+#pragma code(UII_DOS_CODE)
+#pragma data(UII_DOS_DATA)
+#pragma bss(UII_DOS_BSS)
 
 void uii_get_path(void)
 // Get the current path
@@ -293,6 +308,51 @@ void uii_write_file(char *data, unsigned length)
 	uii_readdata();
 	uii_readstatus();
 	uii_accept();
+}
+
+void uii_write_file_from(const char *data, unsigned length)
+// Write length bytes from memory to the open file, without copying them
+// into the shared command buffer (no heap, no UII_COMMAND_MAX limit on
+// the caller's side). Keep length at a few hundred bytes per call; the
+// Ultimate's command FIFO holds one command. Library 1.3.0.
+// Input: data   - source bytes
+//        length - number of bytes
+{
+	char cmd[] = {0x00, DOS_CMD_WRITE_DATA, 0x00, 0x00};
+
+	uii_settarget(TARGET_DOS1);
+	uii_sendcommand_data(cmd, 4, data, length);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
+}
+
+unsigned uii_read_file_to(char *dest, unsigned length)
+// Read up to length bytes from the open file straight into memory, not
+// into uii_data[] (which holds DATA_QUEUE_SZ bytes). Library 1.3.0.
+// Input:  dest   - destination buffer
+//         length - number of bytes to read
+// Output: number of bytes received (less than length at end of file)
+{
+	unsigned count = 0;
+
+	uii_read_file(length);
+	// The firmware answers in packets of up to 512 bytes; "data more"
+	// means another packet follows once this one is acknowledged.
+	for (;;)
+	{
+		count += uii_readdata_to(dest + count, length - count);
+		if (count < length && uii_ismoredataavailable())
+		{
+			uii_accept();
+			continue;
+		}
+		break;
+	}
+	uii_readstatus();
+	uii_accept();
+	return count;
 }
 
 void uii_read_file(unsigned length)
@@ -1290,3 +1350,7 @@ void uii_load_config(const char *filename)
 	uii_readstatus();
 	uii_accept();
 }
+
+#pragma code(code)
+#pragma data(data)
+#pragma bss(bss)

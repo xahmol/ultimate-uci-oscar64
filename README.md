@@ -12,19 +12,22 @@ Commodore 64 Ultimate**, for the
 
 Not every function has been used on real hardware yet: those carry
 `[UNTESTED]` in the headers, and section 20 of the UCI manual lists the
-status of each function (77 of 152 untested in 1.2.0, including the whole
+status of each function (76 of 170 untested in 1.3.0, including the whole
 HTTP target).
 
 Based on the Ultimate II Dos Lib by Scott Hutter and Francesco Sblendorio
 (https://github.com/xlar54/ultimateii-dos-lib). Adapted for Oscar64 by
-Xander Mol, with fixes by Christian Gleissner. Licensed under the GNU GPL v3,
-like the original.
+Xander Mol, with fixes by Christian Gleissner. The Upic module is based on
+code contributed by Aleksi Eeben, creator of Upic (his Upic v1.3
+`display.s` and `drawing.s`, published here with his permission).
+Licensed under the GNU GPL v3, like the original.
 
 Manuals: [`docs/UCILIB_MANUAL.md`](docs/UCILIB_MANUAL.md) (UCI: registers,
 protocol, every function, firmware command coverage, test status),
-[`docs/TURBOCONTROL_MANUAL.md`](docs/TURBOCONTROL_MANUAL.md) (turbo) and
+[`docs/TURBOCONTROL_MANUAL.md`](docs/TURBOCONTROL_MANUAL.md) (turbo),
 [`docs/ULTIMATEAUDIO_MANUAL.md`](docs/ULTIMATEAUDIO_MANUAL.md) (audio and MOD
-player).
+player) and [`docs/UPIC_MANUAL.md`](docs/UPIC_MANUAL.md) (Upic picture mode,
+based on Aleksi Eeben's Upic and Christian Gleissner's 48 MHz path).
 
 ## Files
 
@@ -39,6 +42,7 @@ player).
 | `include/ultimate_turbo_lib.h/.c` | U64 turbo speed control and detection |
 | `include/ultimate_audio_lib.h/.c` | Ultimate Audio 7-voice DMA layer, REU fetch |
 | `include/ultimate_modplay_lib.h/.c` | ProTracker MOD player (uses audio + DOS) |
+| `include/ultimate_upic_lib.h/.c` | Upic 384x256 16-color picture mode: display (48/64 MHz), drawing, .upic files (uses common, DOS, turbo) |
 
 Each header has a `#pragma compile(...)` for its `.c`, so a program only
 includes the headers it needs; Oscar64 drops functions that are never
