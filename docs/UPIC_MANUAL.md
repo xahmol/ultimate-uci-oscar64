@@ -212,6 +212,13 @@ is NULL, from the character ROM by screen code. The ROM is read with `$01` =
 stay valid; interrupts are off meanwhile. `uii_upic_hexchars` holds the 16
 character codes for hex digits (default: screen codes `0`-`9`, `A`-`F`).
 
+Aleksi's original `drawing.s` uses his own Kuru Mono font (Heartbeat
+Latin-1) at `$D000`, under the I/O area, read with `$01` = `$34`, so its
+character codes are ASCII. With the ROM font, text in ASCII (such as a
+`.upic` file's text lines) must be converted to screen codes first; with a
+Latin-1 font in `uii_upic_font`, pass ASCII directly and set
+`uii_upic_hexchars` to `"0123456789ABCDEF"`.
+
 ## 7. Files
 
 ```c
