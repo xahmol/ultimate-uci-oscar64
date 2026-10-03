@@ -2642,15 +2642,15 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_audio_get_version` | Tested | used in UltimateDemo2026 |
 | `uii_audio_reset` | **Untested** | not used by any project yet |
 | `uii_audio_reu_fetch` | Tested | used in UltimateDemo2026 and the MOD player |
-| `uii_hbplay_detect_ntsc` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_fetch_pattern_row` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_init` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_load` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_play_fx` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_set_tempo` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_stop_all` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_stop_fx` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
-| `uii_hbplay_vis_reset` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_detect_ntsc` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) (PAL) |
+| `uii_hbplay_fetch_pattern_row` | Tested (indirect) | via the player's tick (rows advance); 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
+| `uii_hbplay_init` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
+| `uii_hbplay_load` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
+| `uii_hbplay_play_fx` | **Untested** | 1.4.0; used by heartbeat-demo's test harness (key 1-9), not yet exercised on hardware in the library build |
+| `uii_hbplay_set_tempo` | Tested (indirect) | via uii_hbplay_init and the song's tempo commands; 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
+| `uii_hbplay_stop_all` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
+| `uii_hbplay_stop_fx` | **Untested** | 1.4.0; used by heartbeat-demo's test harness, not yet exercised on hardware in the library build |
+| `uii_hbplay_vis_reset` | **Untested** | 1.4.0; not called by heartbeat-demo or the test |
 | `uii_modplay_get_bpm` | **Untested** | not used by any project yet |
 | `uii_modplay_get_order` | **Untested** | not used by any project yet |
 | `uii_modplay_get_pattern` | **Untested** | not used by any project yet |

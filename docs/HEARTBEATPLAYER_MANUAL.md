@@ -416,6 +416,18 @@ into the KERNAL. heartbeat-demo's `main()` shows the full set-up:
   empty NMI handler.
 - Turbo must be on (`uii_turbo_fast()`): at 1 MHz a tick does not fit in
   its time slot.
+- The player's state (`uii_hbplay_state`, `uii_hbplay_vis_event_count`,
+  `uii_hbplay_ext_out`, ...) changes inside the interrupt but is not declared
+  `volatile`. Read it through a volatile pointer in a polling loop, e.g.
+  `*(volatile unsigned char *)&uii_hbplay_state.patt_step`; otherwise Oscar64
+  may keep an old value in a register and the loop never sees a change
+  (found in `tests/hbplay_test.c`).
+- Keys: the KERNAL keyboard scan runs in the player's raster branch, so
+  `kbhit()`/`getch()` and KERNAL `GETIN` work while a song plays. Use
+  `getch()`, not `getchar()`: on the C64 `getchar()` is the KERNAL line
+  editor, which echoes keys and waits for RETURN.
+- The Ultimate's own audio mixer must not have `Vol UltiSid 1`/`2` at `OFF`,
+  or the SID part of a song is silent while the samples play (section 7).
 
 ---
 
