@@ -54,8 +54,8 @@ Add the library as a git submodule, pinned to a release tag:
 
 ```
 git submodule add https://github.com/xahmol/ultimate-uci-oscar64.git lib/ultimate-uci-oscar64
-cd lib/ultimate-uci-oscar64 && git checkout v1.2.0 && cd ../..
-git commit -m "Add ultimate-uci-oscar64 v1.2.0 as a submodule"
+cd lib/ultimate-uci-oscar64 && git checkout v1.3.0 && cd ../..
+git commit -m "Add ultimate-uci-oscar64 v1.3.0 as a submodule"
 ```
 
 Add its `include/` folder to the compiler's include path and to the
