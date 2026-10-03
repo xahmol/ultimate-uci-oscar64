@@ -15,10 +15,10 @@ CFLAGS  = -i=include -O2 -dNOFLOAT -n
 LIBSRCS = $(wildcard include/*.c include/*.h)
 VERSION = $(shell cat VERSION)
 
-.PHONY: all check check-version check-modplay-api smoke speedprobe upictest clean
+.PHONY: all check check-version check-modplay-api check-hbplay-api smoke speedprobe upictest hbplaytest clean
 all: check
 
-check: check-version build/compile_all64.prg build/compile_all128.prg build/compile_modplay64.prg check-modplay-api
+check: check-version build/compile_all64.prg build/compile_all128.prg build/compile_modplay64.prg check-modplay-api build/compile_hbplay64.prg check-hbplay-api
 
 check-version:
 	@grep -q '^#define UII_LIB_VERSION "$(VERSION)"' include/ultimate_common_lib.h || \
@@ -27,12 +27,12 @@ check-version:
 		(echo "ERROR: CHANGELOG.md has no '## [$(VERSION)]' entry" && false)
 	@echo "Version $(VERSION) consistent"
 
-NOMODPLAY = $(filter-out include/ultimate_modplay_lib.h,$(wildcard include/ultimate_*_lib.h))
+NOMODPLAY = $(filter-out include/ultimate_modplay_lib.h include/ultimate_hbplay_lib.h,$(wildcard include/ultimate_*_lib.h))
 
 build/compile_all.c: tests/gen_compile_all.sh $(LIBSRCS)
 	@mkdir -p build
 	sh tests/gen_compile_all.sh $(NOMODPLAY) > $@
-	@echo "$$(grep -c '(void \*)uii_' $@) library functions (+ MOD player, checked separately)"
+	@echo "$$(grep -c '(void \*)uii_' $@) library functions (+ MOD and Heartbeat players, checked separately)"
 
 build/compile_modplay64.prg: tests/compile_modplay.c $(LIBSRCS)
 	@mkdir -p build
@@ -44,6 +44,17 @@ check-modplay-api:
 	@for f in $$(grep -oE '^[a-z][a-zA-Z_ *]*[ *](uii_[a-z_0-9]+)\(' include/ultimate_modplay_lib.h | grep -oE 'uii_[a-z_0-9]+'); do \
 		grep -q "$$f(" tests/compile_modplay.c || { echo "ERROR: $$f missing in tests/compile_modplay.c"; exit 1; }; done
 	@echo "MOD player API covered by tests/compile_modplay.c"
+
+build/compile_hbplay64.prg: tests/compile_hbplay.c $(LIBSRCS) $(wildcard include/heartbeat/*.bin)
+	@mkdir -p build
+	$(OSCAR64) $(CFLAGS) -i=include -tm=c64 -o=$@ $<
+
+# Every function declared in the Heartbeat player header must be called by
+# tests/compile_hbplay.c.
+check-hbplay-api:
+	@for f in $$(grep -oE '^[a-z][a-zA-Z_ *]*[ *](uii_[a-z_0-9]+)\(' include/ultimate_hbplay_lib.h | grep -oE 'uii_[a-z_0-9]+'); do \
+		grep -q "$$f(" tests/compile_hbplay.c || { echo "ERROR: $$f missing in tests/compile_hbplay.c"; exit 1; }; done
+	@echo "Heartbeat player API covered by tests/compile_hbplay.c"
 
 build/compile_all64.prg: build/compile_all.c
 	$(OSCAR64) $(CFLAGS) -i=include -tm=c64 -o=$@ $<
@@ -60,6 +71,14 @@ upictest: build/upictest.prg
 build/upictest.prg: tests/upic_test.c $(LIBSRCS)
 	@mkdir -p build
 	$(OSCAR64) $(CFLAGS) -i=include -tm=c64 -dUII_UPIC_RELOC_COLS=20 -dUII_UPIC_RELOC_BASE=0xE000 -dUII_UPIC_GEN=upicgen -o=$@ $<
+
+# Hardware test of the Heartbeat Soundtracker player (needs SONG.REU next
+# to the PRG; see tests/hbplay_test.c).
+hbplaytest: build/hbplaytest.prg
+
+build/hbplaytest.prg: tests/hbplay_test.c $(LIBSRCS) $(wildcard include/heartbeat/*.bin)
+	@mkdir -p build
+	$(OSCAR64) $(CFLAGS) -tm=c64 -o=$@ $<
 
 # Hardware test of the raster-timed speed probe (Ultimate 64, PAL).
 speedprobe: build/speedprobe.prg

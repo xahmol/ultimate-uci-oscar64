@@ -378,7 +378,7 @@ library (it is a git submodule):
 
 The macro names are `UII_<MODULE>_CODE`, `UII_<MODULE>_DATA` and
 `UII_<MODULE>_BSS`, with `<MODULE>` one of `COMMON`, `DOS`, `TIME`,
-`NETWORK`, `SOFTIEC`, `HTTP`, `TURBO`, `AUDIO`, `MODPLAY`, `UPIC`. Set them
+`NETWORK`, `SOFTIEC`, `HTTP`, `TURBO`, `AUDIO`, `MODPLAY`, `HBPLAY`, `UPIC`. Set them
 on the compiler command line (the library's `.c` files are separate
 translation units, so a `#define` in the project's source does not reach
 them), and declare the sections themselves in the project before the
@@ -2642,6 +2642,15 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_audio_get_version` | Tested | used in UltimateDemo2026 |
 | `uii_audio_reset` | **Untested** | not used by any project yet |
 | `uii_audio_reu_fetch` | Tested | used in UltimateDemo2026 and the MOD player |
+| `uii_hbplay_detect_ntsc` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_fetch_pattern_row` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_init` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_load` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_play_fx` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_set_tempo` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_stop_all` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_stop_fx` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
+| `uii_hbplay_vis_reset` | **Untested** | 1.4.0; port of heartbeat-demo's player (tested there on an Ultimate 64 Elite II); the library build not yet run on hardware |
 | `uii_modplay_get_bpm` | **Untested** | not used by any project yet |
 | `uii_modplay_get_order` | **Untested** | not used by any project yet |
 | `uii_modplay_get_pattern` | **Untested** | not used by any project yet |

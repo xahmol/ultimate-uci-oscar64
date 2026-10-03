@@ -22,9 +22,9 @@ Patches and pull requests are welcome
 // incompatible API changes, MINOR for new functions, PATCH for fixes.
 // Must match the VERSION file; `make check` verifies this.
 #define UII_LIB_VERSION_MAJOR 1
-#define UII_LIB_VERSION_MINOR 3
+#define UII_LIB_VERSION_MINOR 4
 #define UII_LIB_VERSION_PATCH 0
-#define UII_LIB_VERSION "1.3.0"
+#define UII_LIB_VERSION "1.4.0"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -5,6 +5,31 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.0] - 2026-10-03
+
+### Added
+
+- **Heartbeat Soundtracker player** (`ultimate_hbplay_lib`,
+  `docs/HEARTBEATPLAYER_MANUAL.md`): plays Heartbeat Soundtracker songs
+  (`.reu`) on up to 8 SID chips and the 7 Ultimate Audio channels, with
+  per-tick modulation (vibrato, pulse width, filter sweep, wave/arpeggio
+  tables, portamento), all 11 track commands, sound effects
+  (`uii_hbplay_play_fx`/`stop_fx`), PAL/NTSC detection, music sync output
+  and visualizer hooks. **Based on the Heartbeat Soundtracker player by
+  Aleksi Eeben / Eight Bit Shed**; the C port was written for heartbeat-demo
+  and moved here, now on the library's audio and DOS functions. The player's
+  own tempo and frequency tables are included (`include/heartbeat/`), with
+  his written permission: see `NOTICE.md`. Section hook
+  `UII_HBPLAY_CODE`/`_DATA`/`_BSS`; `uii_hbplay_load()` loads from the
+  current or home directory (the demo's drive search stays in programs).
+- `tests/hbplay_test.c` (`make hbplaytest`): hardware test of the player;
+  `tests/compile_hbplay.c` in `make check`.
+
+### Fixed (documentation)
+
+- README: the section hook (1.3.0) is no longer listed as a missing
+  feature.
+
 ## [1.3.0] - 2026-10-03
 
 ### Added
