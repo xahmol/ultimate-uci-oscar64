@@ -2646,10 +2646,10 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_hbplay_fetch_pattern_row` | Tested (indirect) | via the player's tick (rows advance); 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
 | `uii_hbplay_init` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
 | `uii_hbplay_load` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
-| `uii_hbplay_play_fx` | **Untested** | 1.4.0; used by heartbeat-demo's test harness (key 1-9), not yet exercised on hardware in the library build |
+| `uii_hbplay_play_fx` | Tested | 1.4.0; heartbeat-demo v1.1.0 test harness (key A: sample 1 at C-4 on Ultimate Audio channel 6) on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
 | `uii_hbplay_set_tempo` | Tested (indirect) | via uii_hbplay_init and the song's tempo commands; 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
 | `uii_hbplay_stop_all` | Tested | 1.4.0; tests/hbplay_test.c and heartbeat-demo v1.1.0 on an Ultimate 64 Elite II and an Ultimate 64 Elite (fw 3.15a) |
-| `uii_hbplay_stop_fx` | **Untested** | 1.4.0; used by heartbeat-demo's test harness, not yet exercised on hardware in the library build |
+| `uii_hbplay_stop_fx` | **Untested** | 1.4.0; called by heartbeat-demo's test harness (key X), but the songs used re-trigger channel 6 at once, so the effect could not be observed |
 | `uii_hbplay_vis_reset` | **Untested** | 1.4.0; not called by heartbeat-demo or the test |
 | `uii_modplay_get_bpm` | **Untested** | not used by any project yet |
 | `uii_modplay_get_order` | **Untested** | not used by any project yet |

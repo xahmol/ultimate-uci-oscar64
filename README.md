@@ -13,7 +13,7 @@ Commodore 64 Ultimate**, for the
 
 Not every function has been used on real hardware yet: those carry
 `[UNTESTED]` in the headers, and section 20 of the UCI manual lists the
-status of each function (79 of 179 untested in 1.4.0, including the whole
+status of each function (78 of 179 untested in 1.4.0, including the whole
 HTTP target).
 
 Based on the Ultimate II Dos Lib by Scott Hutter and Francesco Sblendorio
