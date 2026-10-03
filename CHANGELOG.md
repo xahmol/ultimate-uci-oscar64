@@ -5,6 +5,26 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.2.1] - 2026-10-03
+
+### Fixed
+
+- `uii_load_config()` now sends the file name with its terminating 0. The
+  firmware reads the name as a C string and doesn't terminate incoming
+  commands, so without it the name ran on into bytes left over from an
+  earlier, longer command: the call worked or answered `88,CANNOT OPEN
+  CONFIG FILE` depending on what had been sent before (found in
+  UBoot64-v2 #22). `""` still sends no name (firmware default file).
+
+### Documented
+
+- `uii_load_config()` tested on hardware (Ultimate 64-II, Ultimate 64
+  Elite, firmware 3.15a). Firmware 3.15a can't open a settings file in
+  the root of a storage device with this command; loading re-applies
+  every settings store with pending changes, which can restart a drive
+  (a mount right after can answer `90,DRIVE NOT PRESENT` for a moment).
+- `uii_get_deviceinfo()` tested (through `uii_parse_deviceinfo()`, #2).
+
 ## [1.2.0] - 2026-10-02
 
 ### Added

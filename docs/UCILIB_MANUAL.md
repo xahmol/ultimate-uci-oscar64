@@ -1602,7 +1602,7 @@ void uii_easyflash_erase(char bank, char baseaddr);
 
 ---
 
-### `uii_load_config` *new*
+### `uii_load_config`
 
 ```c
 void uii_load_config(const char *filename);
@@ -1613,6 +1613,12 @@ void uii_load_config(const char *filename);
 **Parameters:** `filename`: full path; `""` uses the firmware default `/temp/uci_config.cfg`. The file is not deleted.
 
 **Data returned:** the parse log (lines that could not be applied; empty on full success). **Status:** `"00,OK"`, `"88,CANNOT OPEN CONFIG FILE"` or `"89,CONFIG FILE HAD ERRORS"`.
+
+**Tested on hardware** (UBoot64-v2, Ultimate 64-II and Ultimate 64 Elite, firmware 3.15a, 2026-10-03). Notes:
+
+- The name is sent **with its terminating 0** (since 1.2.1): the firmware takes `command->message + 2` as a C string and doesn't terminate incoming commands. Before 1.2.1 the name ran on into bytes left over from an earlier, longer command, so the call worked or answered `88` depending on what had been sent before.
+- Firmware 3.15a **can't open a file in the root of a storage device** with this command: `/sd/x.cfg` answers `88`, `/sd/dir/x.cfg` works. Put settings files in a folder.
+- After loading, the firmware **re-applies every settings store with pending changes**, not only those in the file. If a drive store is among them, the drive emulation restarts: a `uii_mount_disk()` right after can answer `"90,DRIVE NOT PRESENT"` for a moment. Retry for a few seconds.
 
 ---
 
@@ -2421,7 +2427,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_find_media_path` | Tested | used in UltimateDemo2026, heartbeat-demo |
 | `uii_finish_capture` | **Untested** | not used by any project yet |
 | `uii_freeze` | **Untested** | not used by any project yet |
-| `uii_get_deviceinfo` | **Untested** | not used by any project yet |
+| `uii_get_deviceinfo` | Tested | UBoot64-v2, through `uii_parse_deviceinfo()` at every start |
 | `uii_get_dir` | Tested | used in UBoot64-v2 |
 | `uii_get_drive_a_power` | **Untested** | not used by any project yet |
 | `uii_get_drive_b_power` | **Untested** | not used by any project yet |
@@ -2461,7 +2467,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_isdataavailable` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_ismoredataavailable` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_isstatusdataavailable` | Tested (indirect) | via uii_readstatus |
-| `uii_load_config` | **Untested** | not used by any project yet |
+| `uii_load_config` | Tested | UBoot64-v2 (program settings files); fixed in 1.2.1 |
 | `uii_load_reu` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, heartbeat-demo, landoficeandfire, mandelbrot-upic |
 | `uii_load_reu_at` | Tested | used in UltimateDemo2026 |
 | `uii_load_reu_preload` | **Untested** | not used by any project yet |

@@ -1244,10 +1244,49 @@ void uii_save_c64_memory(const char *path)
 // Output:      uii_data: parse log of lines that could not be applied
 //              uii_status: "00,OK", "88,CANNOT OPEN CONFIG FILE" or
 //              "89,CONFIG FILE HAD ERRORS"
+// Notes:       The firmware reads the file name as a C string
+//              (control_target.cc, load_config(): command->message + 2)
+//              and doesn't terminate incoming commands, so the terminating
+//              0 is sent along, as in uii_save_c64_memory(). Without it
+//              (library 1.0.0-1.2.0) the name ran on into bytes an earlier,
+//              longer command left in the firmware's buffer: the call
+//              worked or answered 88 depending on what came before.
+//              Firmware 3.15a can't open a file in the root of a storage
+//              device with this command ("/sd/x.cfg": 88; "/sd/dir/x.cfg"
+//              works). After loading, the firmware re-applies every
+//              settings store with pending changes, which can restart a
+//              drive: a mount right after may answer "90,DRIVE NOT
+//              PRESENT" for a moment. Tested on hardware (UBoot64-v2).
 // ---------------------------------------------------------------------------
 void uii_load_config(const char *filename)
 {
-	char header[2] = {0x00, CTRL_CMD_LOAD_CONFIG};
+	unsigned len = strlen(filename);
+	char *cmd;
 
-	uii_send_with_name(TARGET_CONTROL, header, sizeof(header), filename);
+	// "" sends no name: the firmware then uses its default file
+	if (len)
+	{
+		len++; // with the terminating 0
+	}
+	if (len > UII_NAME_MAX)
+	{
+		return;
+	}
+	cmd = uii_command_buffer(2 + len);
+	if (!cmd)
+	{
+		return;
+	}
+	cmd[1] = CTRL_CMD_LOAD_CONFIG;
+	if (len)
+	{
+		memcpy(cmd + 2, filename, len);
+	}
+
+	uii_settarget(TARGET_CONTROL);
+	uii_sendcommand(cmd, 2 + len);
+
+	uii_readdata();
+	uii_readstatus();
+	uii_accept();
 }

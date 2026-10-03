@@ -43,7 +43,7 @@ void uii_loadIntoRamDisk(char id, char *filename, char whatif); // Load file int
 void uii_saveRamDisk(char id, char *filename);       // Save RAM disk to file
 void uii_save_reu(char size);                        // [UNTESTED] Save REU to file at current path; size index selects REU size
 void uii_load_reu(char size);                        // Load REU from file at current path; size index selects REU size
-void uii_get_deviceinfo(void);                       // [UNTESTED] Populate uii_devinfo[] with drive state
+void uii_get_deviceinfo(void);                       // Populate uii_devinfo[] with drive state
 char uii_parse_deviceinfo(void);                     // Returns 1 if device info was parsed successfully
 char *uii_device_type(char typeval);                 // Return drive type string for typeval
 void uii_reboot(void);                               // Reboot the Ultimate device
@@ -74,7 +74,7 @@ void uii_easyflash_erase(char bank, char baseaddr);  // [UNTESTED] Erase EasyFla
 void uii_load_reu_preload(void);                     // [UNTESTED] Load the REU preload image set in the Ultimate menu
 void uii_save_reu_preload(void);                     // [UNTESTED] Save REU to the configured preload image
 void uii_save_c64_memory(const char *path);          // [UNTESTED] U64 only: dump all 64 KB of C64 RAM to a file (NULL = /temp/c64_memory.bin)
-void uii_load_config(const char *filename);              // [UNTESTED] Firmware 3.15+: apply settings from a .cfg file
+void uii_load_config(const char *filename);              // Firmware 3.15+: apply settings from a .cfg file (not in a storage root, see manual)
 
 #pragma compile("ultimate_dos_lib.c")
 
