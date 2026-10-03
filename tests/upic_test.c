@@ -14,7 +14,9 @@
 //
 // The symbol `result` is in build/upictest.map. Afterwards the picture
 // is shown with 100 polled frames, then by the raster-IRQ viewer while
-// main() counts `mainloops`; uii_upic_framecount counts IRQ frames.
+// main() counts `mainloops` -- first only rows 120-135
+// (uii_upic_set_window) for 150 frames, then the whole picture;
+// uii_upic_framecount counts IRQ frames.
 //
 // The test pattern: 16 vertical color bars, single-dot white/black
 // stripes at both edges (to check the exact pitch on screen: every
@@ -172,7 +174,13 @@ int main(void)
 	// together with uii_upic_framecount). Runs until reset.
 	for (ok = 0; ok < 100; ok++)
 		uii_upic_show_frame();
+	// IRQ viewer with a 16-row window (rows 120-135) for 150 frames, then
+	// the whole picture.
+	uii_upic_set_window(120, 16);
 	uii_upic_irq_start();
+	while (uii_upic_framecount < 150)
+		mainloops++;
+	uii_upic_set_window(0, 0);
 	for (;;)
 		mainloops++;
 	return 0;

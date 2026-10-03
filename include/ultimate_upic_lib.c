@@ -66,6 +66,17 @@ char uii_upic_code[UII_UPIC_CODE_SIZE];
 #pragma bss(UII_UPIC_BSS)
 
 char uii_upic_turbo = 0x8f;            // TURBO_SPEED_MAX | TURBO_BADLINES_OFF
+
+// Display window (uii_upic_set_window()): rows win_first..win_end-1 are
+// shown (win_end 0 = up to row 255), the rest stays black. Row r is drawn
+// on raster line $19 + r; the frame loops start waiting for line
+// win_line = $18 + win_first (bit 8 in win_hi), the line before the
+// window. Default: the whole picture.
+static char uii_upic_win_first = 0;
+static char uii_upic_win_end = 0;
+static char uii_upic_win_lo = 0x18;
+static char uii_upic_win_hi = 0;
+static char uii_upic_irq_on = 0;
 volatile char uii_upic_framecount;
 static char uii_upic_mask_col;         // 0: mask off
 static char uii_upic_mask_top, uii_upic_mask_bottom;
@@ -262,11 +273,17 @@ __asm uii_upic_frame_asm
 	f2:
 		lda $d011               // ...and the raster wrap to line 0
 		bmi f2
-		lda #$18                // top of the picture (raster line 24)
+		lda uii_upic_win_hi     // window starts below line 255?
+		beq lo
+	f3:
+		lda $d011               // then wait for line 256 first
+		bpl f3
+	lo:
+		lda uii_upic_win_lo     // the line before the window's first row
 	tw:
 		cmp $d012
 		bne tw
-		ldy #$00
+		ldy uii_upic_win_first
 	line:
 		lda $d012
 	lw:
@@ -278,6 +295,7 @@ __asm uii_upic_frame_asm
 		stx $d031
 		jsr uii_upic_code
 		iny
+		cpy uii_upic_win_end    // 0 = after row 255 (Y wrapped)
 		bne line
 		rts
 }
@@ -316,11 +334,11 @@ __asm uii_upic_irq_asm
 		pha
 		lda #$35
 		sta $01
-		lda #$18                // top of the picture
+		lda uii_upic_win_lo     // interrupt came one line earlier
 	tw:
 		cmp $d012
 		bne tw
-		ldy #$00
+		ldy uii_upic_win_first
 	line:
 		lda $d012
 	lw:
@@ -332,8 +350,10 @@ __asm uii_upic_irq_asm
 		stx $d031
 		jsr uii_upic_code
 		iny
+		cpy uii_upic_win_end
 		bne line
-		sty $d020               // rest of the frame black
+		lda #$00                // rest of the frame black
+		sta $d020
 		inc uii_upic_framecount
 		lda #$01                // acknowledge the raster interrupt
 		sta $d019
@@ -350,13 +370,37 @@ __asm uii_upic_irq_asm
 		jmp (uii_upic_irq_hook)
 }
 
+// Raster interrupt one line above the window (display off; $D011 bit 7
+// is bit 8 of the compare line).
+static void uii_upic_irq_line(void)
+{
+	unsigned line = 0x17 + uii_upic_win_first;
+	*(volatile char *)0xd012 = (char)line;
+	*(volatile char *)0xd011 = (line >> 8) ? 0x80 : 0x00;
+}
+
+void uii_upic_set_window(char first, char rows)
+{
+	unsigned line = 0x18 + first;
+	__asm {
+		php
+		sei
+	}
+	uii_upic_win_first = first;
+	uii_upic_win_end = first + rows;
+	uii_upic_win_lo = (char)line;
+	uii_upic_win_hi = (char)(line >> 8);
+	if (uii_upic_irq_on)
+		uii_upic_irq_line();
+	__asm { plp }
+}
+
 void uii_upic_irq_start(void)
 {
 	__asm { sei }
 	*(volatile char *)0x01 = 0x35;
 	*(void **)0xfffa = uii_upic_rti;           // NMI (RESTORE): ignore
 	*(void **)0xfffe = uii_upic_irq_asm;
-	*(volatile char *)0xd011 = 0x00;           // display off, raster bit 8 = 0
 	// No CIA timer interrupts, and acknowledge a pending one: an
 	// unacknowledged CIA1 interrupt keeps the IRQ line low, so the CPU
 	// re-enters the handler right after every RTI and the main program
@@ -367,7 +411,8 @@ void uii_upic_irq_start(void)
 		sta $dc0d
 		lda $dc0d
 	}
-	*(volatile char *)0xd012 = 0x17;           // interrupt one line above the picture
+	uii_upic_irq_on = 1;
+	uii_upic_irq_line();                       // one line above the window
 	*(volatile char *)0xd01a = 0x01;
 	*(volatile char *)0xd019 = 0x01;
 	__asm { cli }
@@ -376,6 +421,7 @@ void uii_upic_irq_start(void)
 void uii_upic_irq_stop(void)
 {
 	__asm { sei }
+	uii_upic_irq_on = 0;
 	*(volatile char *)0xd01a = 0x00;
 	*(volatile char *)0xd019 = 0x01;
 }

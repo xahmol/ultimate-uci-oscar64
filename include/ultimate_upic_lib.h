@@ -125,6 +125,18 @@ void uii_upic_set_delay(char delay);                // [UNTESTED]
   per count). For tuning the picture's horizontal position.
 */
 
+void uii_upic_set_window(char first, char rows);
+/*
+  Show only picture rows first..first+rows-1 (rows 0 = up to row 255), at
+  their normal screen position; everything else stays black. Applies to
+  uii_upic_show_frame() and to the raster-IRQ viewer (whose interrupt
+  moves to one line above the window, so a narrow window costs little
+  CPU: about 1/312 of the frame per row). Default: the whole picture,
+  uii_upic_set_window(0, 0). Safe to call while the IRQ viewer runs.
+  Library 1.3.0 (idea: Aleksi Eeben -- a narrow window as a progress bar
+  while a picture is drawn).
+*/
+
 extern char uii_upic_turbo;
 /*
   The $D031 value written on every line (default $8F: top speed, no
