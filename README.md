@@ -60,8 +60,8 @@ Add the library as a git submodule, pinned to a release tag:
 
 ```
 git submodule add https://github.com/xahmol/ultimate-uci-oscar64.git lib/ultimate-uci-oscar64
-cd lib/ultimate-uci-oscar64 && git checkout v1.3.0 && cd ../..
-git commit -m "Add ultimate-uci-oscar64 v1.3.0 as a submodule"
+cd lib/ultimate-uci-oscar64 && git checkout v1.4.0 && cd ../..
+git commit -m "Add ultimate-uci-oscar64 v1.4.0 as a submodule"
 ```
 
 Add its `include/` folder to the compiler's include path and to the
@@ -87,7 +87,7 @@ Clone such a project with `git clone --recursive`, or run
 **Updating** to a newer release:
 
 ```
-cd lib/ultimate-uci-oscar64 && git fetch --tags && git checkout v1.3.0 && cd ../..
+cd lib/ultimate-uci-oscar64 && git fetch --tags && git checkout v1.4.0 && cd ../..
 git commit -am "Update ultimate-uci-oscar64 to v1.3.0"
 ```
 
