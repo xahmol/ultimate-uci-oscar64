@@ -4,7 +4,7 @@ ultimate-uci-oscar64 -- https://github.com/xahmol/ultimate-uci-oscar64
 
 Based on Upic v1.3 by Aleksi Eeben (display.s: InitUpic, UpicIRQ,
 RenderLine, PatchLine, WaitForTurbo-free variant; drawing.s: Plot,
-ActualPlot, GetPixel, ClearChar, PutChar, WriteHex), shared with Xander
+GetPixel, ClearChar, PutChar, WriteHex), shared with Xander
 Mol in private correspondence, 2026-10-02. Adapted: Oscar64 port; the
 line renderer and its per-line patch list are generated at run time from
 the column addresses (Aleksi's source uses assembler `repeat` blocks for
@@ -78,8 +78,6 @@ static char uii_upic_win_lo = 0x18;
 static char uii_upic_win_hi = 0;
 static char uii_upic_irq_on = 0;
 volatile char uii_upic_framecount;
-static char uii_upic_mask_col;         // 0: mask off
-static char uii_upic_mask_top, uii_upic_mask_bottom;
 const char *uii_upic_font = 0;
 
 // Screen codes for 0-9 and A-F (character ROM order).
@@ -457,24 +455,6 @@ void uii_upic_clear(char color)
 	color = (color & 0x0f) | (char)(color << 4);
 	for (c = 0; c < UII_UPIC_COLUMNS; c++)
 		memset(uii_upic_column(c), color, 256);
-}
-
-void uii_upic_set_mask(char col, char top, char bottom)
-{
-	uii_upic_mask_col = col;
-	uii_upic_mask_top = top;
-	uii_upic_mask_bottom = bottom;
-}
-
-void uii_upic_plot_masked(unsigned x, char y, char color)
-{
-	if (uii_upic_mask_col)
-	{
-		unsigned char rel = (unsigned char)(x >> 1) - uii_upic_mask_col;
-		if (rel < 8 && y >= uii_upic_mask_top && y <= uii_upic_mask_bottom)
-			return;
-	}
-	uii_upic_plot(x, y, color);
 }
 
 char uii_upic_clearchar(char col, char y)

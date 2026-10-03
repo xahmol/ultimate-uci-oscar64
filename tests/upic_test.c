@@ -21,7 +21,7 @@
 // The test pattern: 16 vertical color bars, single-dot white/black
 // stripes at both edges (to check the exact pitch on screen: every
 // stripe must be one dot wide and the outermost ones visible), text and
-// hex digits via the character ROM, and a masked plot rectangle.
+// hex digits via the character ROM, and a cleared 8x8 cell.
 
 #include <string.h>
 
@@ -97,19 +97,13 @@ static void pattern(void)
 			uii_upic_plot(UII_UPIC_WIDTH - 1 - x, y, (x & 1) ? 0 : 1);
 		}
 
-	// Text and hex digits in white, then a masked rectangle that must
-	// leave byte columns 40-47 (pixels 80-95), rows 100-149, untouched.
+	// Text and hex digits in white, and a cleared 8x8 cell.
 	i = uii_upic_putchar(0x15, 20, 60, 1);        // "U" (screen code)
 	i = uii_upic_putchar(0x10, i, 60, 1);         // "P"
 	i = uii_upic_putchar(0x09, i, 60, 1);         // "I"
 	i = uii_upic_putchar(0x03, i, 60, 1);         // "C"
 	uii_upic_writehex(0xa5, i + 4, 60, 1);
 	uii_upic_clearchar(20, 80);
-	uii_upic_set_mask(40, 100, 149);
-	for (y = 90; y < 160; y++)
-		for (x = 70; x < 110; x++)
-			uii_upic_plot_masked(x, y, 0);
-	uii_upic_set_mask(0, 0, 0);
 }
 
 int main(void)
@@ -128,7 +122,7 @@ int main(void)
 	pattern();
 	result[6] = uii_upic_getpixel(0, 0) == 1 && uii_upic_getpixel(1, 0) == 0
 	         && uii_upic_getpixel(383, 0) == 1 && uii_upic_getpixel(384, 0) == 0xff
-	         && uii_upic_getpixel(80, 100) == 3 && uii_upic_getpixel(70, 100) == 0;
+	         && uii_upic_getpixel(80, 100) == 3;
 
 	trace(1, 0);
 	// A writable directory: the UCI's current directory can be the

@@ -2671,10 +2671,8 @@ The Upic module (`ultimate_upic_lib`, library 1.3.0, see `docs/UPIC_MANUAL.md`):
 | `uii_upic_irq_stop` | **Untested** | 1.3.0; compiled only: no hardware test stops the IRQ viewer yet |
 | `uii_upic_load` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
 | `uii_upic_plot` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
-| `uii_upic_plot_masked` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
 | `uii_upic_putchar` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
 | `uii_upic_save` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
 | `uii_upic_set_delay` | **Untested** | 1.3.0; the default delays were right first time, so it was never needed on hardware |
-| `uii_upic_set_mask` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
 | `uii_upic_show_frame` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |
 | `uii_upic_writehex` | Tested | 1.3.0; tests/upic_test.c on an Ultimate 64 Elite II (64 MHz path) and an Ultimate 64 Elite (48 MHz path), fw 3.15a |

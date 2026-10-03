@@ -32,7 +32,10 @@ has its own color: no character cells, no color clash.
   per-line patched immediate operands that gives an exact one-dot pixel
   pitch at 64 MHz; the raster-IRQ viewer; the drawing routines (Upic v1.3
   `display.s` and `drawing.s`, shared with Xander Mol in private
-  correspondence, 2026-10-02); the v1.3 file header layout.
+  correspondence, 2026-10-02, and published here with his permission,
+  2026-10-03; the plot routine is his ActualPlot -- the Upic
+  Paint-specific tool-panel check of his Plot is left out at his
+  request); the v1.3 file header layout (locked 3 October 2026).
 - **Christian Gleissner**: the 48 MHz display path (3 of every 4 pixels)
   and the raster-timed speed probe it relies on (`uii_turbo_probe_max()` in
   `ultimate_turbo_lib`), first written for mandelbrot-upic (pull request #2).
@@ -183,8 +186,6 @@ __noinline char *uii_upic_column(char col);
 void uii_upic_plot(unsigned x, char y, char color);
 char uii_upic_getpixel(unsigned x, char y);
 void uii_upic_clear(char color);
-void uii_upic_set_mask(char col, char top, char bottom);
-void uii_upic_plot_masked(unsigned x, char y, char color);
 char uii_upic_clearchar(char col, char y);
 char uii_upic_putchar(char ch, char col, char y, char color);
 char uii_upic_writehex(char value, char col, char y, char color);
@@ -201,7 +202,6 @@ columns.
 | `uii_upic_plot` | Set one pixel; ignores `x` >= 384 |
 | `uii_upic_getpixel` | Read one pixel; `$FF` outside the picture |
 | `uii_upic_clear` | Fill the whole picture with one color |
-| `uii_upic_set_mask` / `uii_upic_plot_masked` | Plot that leaves byte columns `col`..`col+7`, rows `top`..`bottom` untouched (Upic Paint's tool panel); `col` = 0 switches the mask off |
 | `uii_upic_clearchar` | Clear an 8x8 cell to color 0; returns `col + 4` |
 | `uii_upic_putchar` | Draw an 8x8 character, set bits only; returns `col + 4` |
 | `uii_upic_writehex` | Two hex digits; returns the next column |
@@ -305,7 +305,7 @@ int main(void)
 `make upictest` builds `build/upictest.prg` (`tests/upic_test.c`), which
 uses the relocated layout (columns 0-19 at `$E000`, the rest from `$2400`).
 It chooses the path, draws a test pattern (color bars, single-dot stripes at
-both edges, text, hex digits, a cleared cell and a masked rectangle), saves
+both edges, text, hex digits and a cleared cell), saves
 it as `upictest.upic` in `/usb0` (or `/sd` when there is no USB storage), clears the picture, loads
 the file back and compares checksum, palette and text, reads 1024 bytes in
 one `uii_read_file_to()` call, then shows 100 polled frames and switches to

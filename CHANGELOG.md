@@ -19,7 +19,7 @@ functions, PATCH for fixes that keep the API.
   The line renderer is generated at run time from the column addresses,
   so any layout works (`UII_UPIC_BITMAP`, `UII_UPIC_RELOC_COLS`,
   `UII_UPIC_RELOC_BASE`). Polled frames and Aleksi's raster-IRQ viewer;
-  drawing (plot, read pixel, masked plot, clear, 8x8 text, hex); `.upic`
+  drawing (plot, read pixel, clear, 8x8 text, hex); `.upic`
   save and load in the Upic v1.3 header format (palette and text in the
   file), loading the converter's bare bitmaps too. Credits: Aleksi Eeben
   (Upic v1.3 display.s/drawing.s, shared privately 2026-10-02) and

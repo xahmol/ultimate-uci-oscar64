@@ -16,7 +16,7 @@ This module (library 1.3.0) contains:
     variant that shows the picture every frame in the background
   - an exact pixel pitch at 64 MHz (Elite II / C64 Ultimate) and at
     48 MHz (original Ultimate 64 / Elite I, 3 of every 4 pixels shown)
-  - drawing: plot, read pixel, masked plot, clear, 8x8 text, hex output
+  - drawing: plot, read pixel, clear, 8x8 text, hex output
   - files: save and load .upic pictures via UCI file I/O, Upic v1.3
     header format (palette and four text lines in the file)
 
@@ -180,14 +180,6 @@ __noinline char *uii_upic_column(char col);     // address of byte column 0..191
 void uii_upic_plot(unsigned x, char y, char color);
 char uii_upic_getpixel(unsigned x, char y);     // color, or $FF outside the picture
 void uii_upic_clear(char color);                // fill the whole picture
-
-void uii_upic_set_mask(char col, char top, char bottom);
-void uii_upic_plot_masked(unsigned x, char y, char color);
-/*
-  Plot that leaves a rectangle untouched: byte columns col..col+7
-  (16 pixels), rows top..bottom. col = 0 disables the mask. Upic Paint
-  keeps its tool panel there.
-*/
 
 char uii_upic_clearchar(char col, char y);
 /*
