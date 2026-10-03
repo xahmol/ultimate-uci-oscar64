@@ -538,13 +538,21 @@ char uii_upic_writehex(char value, char col, char y, char color)
 // ---------------------------------------------------------------
 
 // First 48 header bytes: tag, size, slideshow settings, saved time.
-static const char uii_upic_header0[48] = {
+// Header offsets $00-$17 (Upic v1.3 file format, Aleksi Eeben, locked
+// 3 Oct 2026): tag, size, slideshow/viewer parameters (all off). $15 (UI
+// colours) is written separately from uii_upic_save_colors.
+static const char uii_upic_header0[24] = {
 	0x55, 0x70, 0x69, 0x63, 0x31, 0x2e, 0x33, 0xae,   // "Upic1.3", $AE
 	0x80, 0x01, 0x00, 0x01, 0x10, 0x00, 0x00, 0xc0,   // 384, 256, 16, 49152
-	0, 0, 0, 0, 0, 0, 0, 0,                           // slideshow settings
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,               // last saved time
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+	0, 0, 0, 0, 0, 0, 0, 0                            // $10-$17
 };
+static const char uii_upic_spaces[16] = {
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20,
+	0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20
+};
+
+char uii_upic_save_colors = 0;
+const char *uii_upic_save_time = 0;
 
 char uii_upic_save(const char *filename, const char *palette, const char *text, char overwrite)
 {
@@ -554,15 +562,21 @@ char uii_upic_save(const char *filename, const char *palette, const char *text, 
 	if (!UII_SUCCESS)
 		return 0;
 
-	uii_write_file_from(uii_upic_header0, 48);
-	if (text)
+	// Header in pieces, so no 256-byte buffer is needed.
+	uii_write_file_from(uii_upic_header0, 0x15);           // $00-$14
+	uii_write_file_from(&uii_upic_save_colors, 1);         // $15
+	uii_write_file_from(uii_upic_header0 + 0x10, 2);       // $16-$17 reserved
+	if (uii_upic_save_time)                                // $18-$2F
+		uii_write_file_from(uii_upic_save_time, 24);
+	else
+		for (c = 0; c < 3; c++)
+			uii_write_file_from(uii_upic_header0 + 0x10, 8);
+	if (text)                                              // $30-$CF
 		uii_write_file_from(text, 160);
 	else
-		// No text: 160 zero bytes, 32 at a time from the header template's
-		// zero-filled tail (offsets 16-47), so no buffer is needed.
-		for (c = 0; c < 5; c++)
-			uii_write_file_from(uii_upic_header0 + 16, 32);
-	uii_write_file_from(palette, UII_UPIC_PALETTE);
+		for (c = 0; c < 10; c++)
+			uii_write_file_from(uii_upic_spaces, 16);
+	uii_write_file_from(palette, UII_UPIC_PALETTE);        // $D0-$FF
 
 	for (c = 0; c < UII_UPIC_COLUMNS; c++)
 		uii_write_file_from(uii_upic_column(c), 256);

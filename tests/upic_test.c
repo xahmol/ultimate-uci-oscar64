@@ -157,6 +157,13 @@ int main(void)
 		result[3] = checksum() == before;
 		result[4] = memcmp(palette_in, palette, 48) == 0;
 		result[5] = memcmp(text_in, text, 160) == 0;
+		// Spec check, read back over FTP by the tester: no text (spaces),
+		// UI colours $F1, a time stamp.
+		uii_upic_save_colors = 0xf1;
+		uii_upic_save_time = "2026/10/03 12:00:00     ";
+		uii_upic_save("upicspec.upic", palette, (const char *)0, 1);
+		uii_upic_save_colors = 0;
+		uii_upic_save_time = 0;
 		// A 1024-byte uii_read_file_to() (two firmware packets) into
 		// columns 20-23, which are contiguous: header + columns 0-2.
 		uii_open_file(0x01, (char *)"upictest.upic");

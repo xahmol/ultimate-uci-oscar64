@@ -216,14 +216,28 @@ extern const char *uii_upic_hexchars;           // 16 character codes
 // ---------------------------------------------------------------
 // Files (.upic, Upic v1.3 format)
 // ---------------------------------------------------------------
-// A v1.3 file is a 256-byte header followed by the 49152-byte bitmap
-// in column order. Header (offsets in hex):
-//   00-07 "Upic1.3" (ASCII) and $AE      08-0F width 384, height 256,
-//   10-17 slideshow settings (0)               colors 16, bitmap 49152
-//   18-2F last saved time (0)                  (16-bit little endian)
-//   30-CF four lines of 40 characters of text
+// A v1.3 file (format by Aleksi Eeben, locked 3 Oct 2026) is a 256-byte
+// header followed by the 49152-byte bitmap in column order: 49408 bytes,
+// raw binary, no load address. Header (offsets in hex; in Upic programs
+// it sits at $0F00, the bitmap at $1000):
+//   00-07 "Upic1.3" (ASCII) and $AE -- U and $AE identify the format
+//   08-0F width 384, height 256, colors 16, bitmap size 49152 (16-bit LE)
+//   10    show text: 0 off, 1 top, 2 center, 3 bottom   (slideshow/viewer)
+//   11    slideshow delay in seconds, 0 = infinite
+//   12    SPACE action: 0 none, 1 next picture, 2 reset
+//   13    <- goes to the previous picture (0 = off; more flags may follow)
+//   14    play SoundXX.wav (XX = BCD), 0 = stop, 255 = continue
+//   15    UI colours: high nybble Upic Paint tool panel, low nybble text and
+//         mouse pointer; 0 = Upic Paint chooses from the palette
+//         (uii_upic_save_colors)
+//   16-17 reserved, zero
+//   18-2F last saved time, Ultimate DOS time stamp string, ASCII
+//         (uii_upic_save_time; zeros when not set)
+//   30-CF four lines of 40 characters of text, ASCII, space-filled;
+//         Upic Paint shows them in its disk menu (line 4 is a good place
+//         for "Created with ...")
 //   D0-FF palette, 16 x RGB
-// Layout from Aleksi Eeben's Upic v1.3 viewer (display.s, $0F00-$0FFF).
+// uii_upic_save() writes 10-14 as zero (no slideshow behaviour).
 
 #define UII_UPIC_FILE_ERROR 0
 #define UII_UPIC_FILE_RAW   1   // loaded a bare 49152-byte bitmap (v1.2 converter)
@@ -232,11 +246,14 @@ extern const char *uii_upic_hexchars;           // 16 character codes
 char uii_upic_save(const char *filename, const char *palette, const char *text, char overwrite);
 /*
   Save the picture as a v1.3 .upic file in the current UCI directory.
-  palette: 48 bytes (16 x RGB). text: 160 characters (4 lines of 40), or
-  NULL for 160 zero bytes. overwrite: 0 fails if the file exists, 1 replaces it.
+  palette: 48 bytes (16 x RGB). text: 160 ASCII characters (4 lines of
+  40, space-filled), or NULL for spaces. overwrite: 0 fails if the file exists, 1 replaces it.
   Returns 1 on success, 0 on error (uii_status holds the firmware's
   message). Uses uii_write_file_from(), so no heap or large data queue.
 */
+
+extern char uii_upic_save_colors;     // header $15 for uii_upic_save() (default 0)
+extern const char *uii_upic_save_time; // 24 ASCII bytes for header $18, or NULL
 
 char uii_upic_load(const char *filename, char *palette, char *text);
 /*

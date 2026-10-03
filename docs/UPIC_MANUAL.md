@@ -226,26 +226,35 @@ directory first. Transfers go through `uii_write_file_from()` and
 `uii_read_file_to()`, 256 bytes at a time: no heap and no large data queue
 are needed.
 
-**Format (Upic v1.3):** a 256-byte header followed by the 49152-byte bitmap
-in column order (49408 bytes in total):
+**Format (Upic v1.3, Aleksi Eeben, locked 3 October 2026):** a 256-byte
+header followed by the 49152-byte bitmap in column order, 49408 bytes in
+total, raw binary without a load address. In Upic programs the header sits
+at `$0F00` and the bitmap at `$1000`.
 
 | Offset | Size | Contents |
 |---|---|---|
-| `$00` | 8 | `"Upic1.3"` (ASCII) and `$AE` |
+| `$00` | 8 | `"Upic1.3"` (ASCII) and `$AE`; `U` and `$AE` identify the format |
 | `$08` | 8 | width 384, height 256, colors 16, bitmap size 49152 (16-bit little endian each) |
-| `$10` | 8 | slideshow settings (0) |
-| `$18` | 24 | last saved time (0) |
-| `$30` | 160 | four lines of 40 characters of text |
+| `$10` | 1 | show text: 0 off, 1 top, 2 center, 3 bottom (viewer/slideshow) |
+| `$11` | 1 | slideshow delay in seconds, 0 = infinite |
+| `$12` | 1 | SPACE action: 0 none, 1 next picture, 2 reset |
+| `$13` | 1 | `<-` goes to the previous picture (0 = off; more flags may follow) |
+| `$14` | 1 | play `SoundXX.wav` (XX = BCD), 0 = stop, 255 = continue |
+| `$15` | 1 | UI colours: high nybble Upic Paint tool panel, low nybble text and mouse pointer; 0 = Upic Paint chooses from the palette |
+| `$16` | 2 | reserved, zero |
+| `$18` | 24 | last saved time, Ultimate DOS time stamp string (ASCII) |
+| `$30` | 160 | four lines of 40 characters of text, ASCII, space-filled (Upic Paint shows them in its disk menu; line 4 suits "Created with ...") |
 | `$D0` | 48 | palette, 16 x RGB |
 | `$100` | 49152 | bitmap |
 
-The layout is the 256-byte block at `$0F00` in Aleksi Eeben's Upic v1.3
-viewer (palette at `$0FD0`, picture from `$1000`). The Upic Image Converter
-v1.2 writes `.upic` as the bare 49152-byte bitmap with the palette in a
-separate `.pal` file.
+The Upic Image Converter up to v1.2 writes `.upic` as the bare 49152-byte
+bitmap with the palette in a separate `.pal` file; its next version and
+Upic Paint use this header.
 
 **`uii_upic_save`** writes a v1.3 file. `palette`: 48 bytes. `text`: 160
-characters, or NULL for zero bytes. `overwrite`: 0 fails if the file exists
+ASCII characters, or NULL for spaces. Offsets `$10`-`$14` are written as
+zero; `$15` comes from `uii_upic_save_colors` (default 0) and `$18` from
+`uii_upic_save_time` (24 ASCII bytes, or NULL for zeros). `overwrite`: 0 fails if the file exists
 (open attribute `0x06`), 1 replaces it (`0x0A`). Returns 1 on success, 0 on
 error (`uii_status` holds the firmware's message).
 
