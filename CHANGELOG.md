@@ -5,6 +5,27 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.1] - 2026-10-17
+
+### Fixed (documentation)
+
+Measured on a U64 (firmware 3.15a) by U64 BBC BASIC, which ported
+ModPlayer_16k and drives Ultimate Audio and HTTP itself:
+
+- Ultimate Audio: the multi-byte registers are MSB first (big-endian), as
+  `ultimate_audio_lib.c` writes them; the manual's table and the header's
+  comments said LSB first.
+- Ultimate Audio: control bit 2 (`AUDIO_CTR_RESTART`, name kept) enables
+  the channel's CPU interrupt at the sample's end; it is not a restart.
+  Unacknowledged it hangs the machine (only `uii_audio_detect()` uses it,
+  with interrupts off).
+- Ultimate Audio: loop points A and B are byte offsets from the sample's
+  start (as ModPlayer_16k sets them), not absolute REU addresses.
+- HTTP: a raw exchange (`0x32`) leaves the status empty, also before the
+  first packet's acknowledgement; a JSON exchange (`0x31`) reports "200
+  OK" or "400 NO VALID JSON", so a server's 404 or 500 is not seen.
+  `uii_http_status_code()` gives the server's code only for JSON replies.
+
 ## [1.4.0] - 2026-10-03
 
 ### Added

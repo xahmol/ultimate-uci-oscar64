@@ -2397,8 +2397,14 @@ byte stream. There are 16 header and 16 body slots; handles are 0-15.
 
 **Status:** target commands answer `"000 OK"` on success (`UII_HTTP_OK`),
 otherwise an HTTP-style code such as `"400 BAD COMMAND"`, `"404 KEY NOT
-PRESENT"`, `"507 NO HEADER SLOT"`. After an exchange the status holds the
-server's response line; `uii_http_status_code()` returns its number.
+PRESENT"`, `"507 NO HEADER SLOT"`. After a JSON exchange (`0x31`) the
+status is "200 OK" for a valid JSON reply and "400 NO VALID JSON" for
+anything else, so a 404 or 500 page is not seen; after a raw exchange
+(`0x32`) it is empty, also before the first packet's acknowledgement
+(measured on a U64, firmware 3.15a, 2026-10-17, by U64 BBC BASIC;
+corrected in 1.4.1). `uii_http_status_code()` gives the server's code
+only for JSON replies; a program that needs status codes speaks HTTP
+itself over a TCP socket (`ultimate_network_lib`).
 
 **Strings are ASCII.** URLs, header lines, keys, values and paths are sent
 as raw bytes. With `petscii.h`'s charmap, string literals are PETSCII;
@@ -2456,7 +2462,7 @@ uii_http_exchange_raw(h, UII_HTTP_NO_BODY);
 while (uii_isdataavailable() || uii_ismoredataavailable())
 {
     n = uii_readdata();
-    uii_readstatus();        // raw exchange: the response header
+    uii_readstatus();        // (empty on 3.15a: a raw exchange has no status)
     uii_accept();
     // process n bytes of uii_data
 }

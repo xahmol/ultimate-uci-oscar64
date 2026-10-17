@@ -61,11 +61,11 @@ The MOD player uses **channels 0–3** for music. **Channels 4–6** are free fo
 | `$00` | 8 | W | Control | Start/stop/loop bits |
 | `$01` | 8 | W | Volume | 0 = silent, 63 = maximum (6-bit register; values > 63 cause inconsistent loudness) |
 | `$02` | 8 | W | Pan | 0 = full left, 128 = centre, 255 = full right |
-| `$04` | 32 | W | Start | Sample start address in REU (LSB first) |
-| `$09` | 24 | W | Length | Sample byte count (LSB first) |
-| `$0E` | 16 | W | Rate | Playback rate (LSB first) |
-| `$11` | 24 | W | Loop A | Loop start byte offset (LSB first) |
-| `$15` | 24 | W | Loop B | Loop end byte offset (LSB first) |
+| `$04` | 32 | W | Start | Sample start address: `$01` (the REU's SDRAM bank), then the REU address high, middle, low (MSB first) |
+| `$09` | 24 | W | Length | Sample byte count (MSB first) |
+| `$0E` | 16 | W | Rate | Playback rate (MSB first) |
+| `$11` | 24 | W | Loop A | Loop start, a byte offset from the sample start (MSB first) |
+| `$15` | 24 | W | Loop B | Loop end, a byte offset from the sample start (MSB first) |
 | `$1F` | 8 | W | IRQ | Write `$FF` to acknowledge end-of-sample IRQ |
 
 ### Control register bits
@@ -74,10 +74,10 @@ The MOD player uses **channels 0–3** for music. **Channels 4–6** are free fo
 |-----|----------|-------|---------|
 | 0 | `AUDIO_CTR_START` | `$01` | Start/enable voice |
 | 1 | `AUDIO_CTR_LOOP` | `$02` | Loop continuously between Loop A and Loop B |
-| 2 | `AUDIO_CTR_RESTART` | `$04` | Restart-from-start loop (used internally by `uii_audio_detect()`) |
+| 2 | `AUDIO_CTR_RESTART` | `$04` | The channel's CPU interrupt at the sample's end (status bit 0 set; acknowledge by writing `$FF` to offset `$1F`). Not a restart: measured on a U64 (2026-10-17, U64 BBC BASIC): set without an interrupt handler that acknowledges it, it hangs the machine. Only `uii_audio_detect()` uses it, with interrupts off. |
 | — | `AUDIO_CTR_STOP` | `$00` | Stop voice |
 
-Always write `AUDIO_CTR_STOP` (`$00`) before reconfiguring a voice, then write the start value.
+Always write `AUDIO_CTR_STOP` (`$00`) before reconfiguring a voice, then write the start value. All multi-byte registers are MSB first (big-endian), as `ultimate_audio_lib.c` and ModPlayer_16k write them (corrected 1.4.1: this table said LSB first).
 
 ### Rate formula
 
@@ -193,7 +193,7 @@ void uii_audio_channel_loop(char ch,
                         unsigned char pan);
 ```
 
-Looping playback. The sample plays from `start` to `start + length`, then continuously loops between `loop_a` and `loop_b` (both are absolute REU addresses). Loop continues until `uii_audio_channel_stop()` is called.
+Looping playback. The sample plays from `start` to `start + length`, then continuously loops between `loop_a` and `loop_b`: byte offsets from `start`, as ModPlayer_16k sets them (not absolute REU addresses; corrected 1.4.1). Loop continues until `uii_audio_channel_stop()` is called.
 
 ### `uii_audio_channel_stop`
 

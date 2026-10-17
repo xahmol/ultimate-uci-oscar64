@@ -41,11 +41,11 @@ extern const unsigned uii_audio_ch_base[AUDIO_NUM_CHANNELS];
 #define AUDIO_OFF_CTR     0x00  // 8-bit  Control
 #define AUDIO_OFF_VOL     0x01  // 8-bit  Volume  (0=silent, 63=max — hardware register is 6-bit)
 #define AUDIO_OFF_PAN     0x02  // 8-bit  Panning (0=left, 128=centre, 255=right)
-#define AUDIO_OFF_SMS     0x04  // 32-bit Sample start address (LSB first, 4 bytes)
-#define AUDIO_OFF_SML     0x09  // 24-bit Sample length       (LSB first, 3 bytes)
-#define AUDIO_OFF_RAT     0x0E  // 16-bit Playback rate/period (LSB first, 2 bytes)
-#define AUDIO_OFF_RPA     0x11  // 24-bit Repeat point A      (LSB first, 3 bytes)
-#define AUDIO_OFF_RPB     0x15  // 24-bit Repeat point B      (LSB first, 3 bytes)
+#define AUDIO_OFF_SMS     0x04  // 32-bit Sample start address (MSB first: $01 = SDRAM bank of the REU, then REU address high, middle, low)
+#define AUDIO_OFF_SML     0x09  // 24-bit Sample length       (MSB first, 3 bytes)
+#define AUDIO_OFF_RAT     0x0E  // 16-bit Playback rate/period (MSB first, 2 bytes)
+#define AUDIO_OFF_RPA     0x11  // 24-bit Repeat point A      (MSB first, 3 bytes; offset from the sample start)
+#define AUDIO_OFF_RPB     0x15  // 24-bit Repeat point B      (MSB first, 3 bytes; offset from the sample start)
 #define AUDIO_OFF_IRQ     0x1F  // 8-bit  IRQ settings / acknowledge
 
 // ---------------------------------------------------------------
@@ -53,7 +53,7 @@ extern const unsigned uii_audio_ch_base[AUDIO_NUM_CHANNELS];
 // ---------------------------------------------------------------
 #define AUDIO_CTR_START   0x01  // Bit 0: start/enable voice
 #define AUDIO_CTR_LOOP    0x02  // Bit 1: loop between RPA and RPB
-#define AUDIO_CTR_RESTART 0x04  // Bit 2: restart-from-start loop (used in detection)
+#define AUDIO_CTR_RESTART 0x04  // Bit 2: the channel's CPU interrupt at the sample's end (name kept; not a "restart": measured on a U64, 2026-10-17). Unacknowledged (write $FF to AUDIO_OFF_IRQ) it hangs a machine whose interrupt handler does not know it: only uii_audio_detect() uses it, with interrupts off
 #define AUDIO_CTR_STOP    0x00  // Write 0 to stop voice
 
 // Interrupt status register (AUDIO_OFF_STATUS / read)

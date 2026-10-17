@@ -368,10 +368,11 @@ char uii_http_exchange(char header, char body, char *resp_header, char *resp_bod
 }
 
 void uii_http_exchange_raw(char header, char body)
-// Send the request and stream the reply body unprocessed. The status
-// channel holds the response header (up to 256 bytes); read it with
-// uii_readstatus(). Read the body like a file, in packets of up to 896
-// bytes (uii_readdata() keeps DATA_QUEUE_SZ bytes per packet; raise
+// Send the request and stream the reply body unprocessed. Firmware 3.15a
+// puts no response header in the status channel (measured, 2026-10-17):
+// the HTTP status code of a raw exchange cannot be read. Read the body
+// like a file, in packets of up to 896 bytes (uii_readdata() keeps
+// DATA_QUEUE_SZ bytes per packet; raise
 // DATA_QUEUE_SZ to 896 with -dDATA_QUEUE_SZ=896 to keep them all):
 //   uii_http_exchange_raw(h, UII_HTTP_NO_BODY);
 //   while (uii_isdataavailable() || uii_ismoredataavailable()) {
