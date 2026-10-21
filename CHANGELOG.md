@@ -5,6 +5,16 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.2] - 2026-10-21
+
+### Fixed
+
+- Ultimate Audio: `uii_audio_channel_play()` sets loop points A and B to
+  0. Non-zero loop points loop a sample even without `AUDIO_CTR_LOOP`,
+  and a voice keeps them from an earlier `uii_audio_channel_loop()`: a
+  one-shot played after a loop on the same voice looped for ever.
+  Measured on a U64 (firmware 3.15a) by U64 BBC BASIC.
+
 ## [1.4.1] - 2026-10-17
 
 ### Fixed (documentation)

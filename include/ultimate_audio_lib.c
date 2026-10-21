@@ -208,6 +208,10 @@ void uii_audio_channel_play(char ch,
     ch_wr_sms(ch, start);
     ch_wr_be24(ch, AUDIO_OFF_SML, length);
     ch_wr16(ch, AUDIO_OFF_RAT, rate);
+    // Loop points 0: the voice keeps any earlier ones, and non-zero loop
+    // points loop the sample even without AUDIO_CTR_LOOP (1.4.2)
+    ch_wr_be24(ch, AUDIO_OFF_RPA, 0);
+    ch_wr_be24(ch, AUDIO_OFF_RPB, 0);
     ch_wr(ch, AUDIO_OFF_CTR, AUDIO_CTR_START);
 }
 

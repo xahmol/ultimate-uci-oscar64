@@ -73,7 +73,7 @@ The MOD player uses **channels 0–3** for music. **Channels 4–6** are free fo
 | Bit | Constant | Value | Meaning |
 |-----|----------|-------|---------|
 | 0 | `AUDIO_CTR_START` | `$01` | Start/enable voice |
-| 1 | `AUDIO_CTR_LOOP` | `$02` | Loop continuously between Loop A and Loop B |
+| 1 | `AUDIO_CTR_LOOP` | `$02` | Loop continuously between Loop A and Loop B (non-zero loop points loop even without this bit: set both to 0 for a one-shot) |
 | 2 | `AUDIO_CTR_RESTART` | `$04` | The channel's CPU interrupt at the sample's end (status bit 0 set; acknowledge by writing `$FF` to offset `$1F`). Not a restart: measured on a U64 (2026-10-17, U64 BBC BASIC): set without an interrupt handler that acknowledges it, it hangs the machine. Only `uii_audio_detect()` uses it, with interrupts off. |
 | — | `AUDIO_CTR_STOP` | `$00` | Stop voice |
 
@@ -169,7 +169,7 @@ void uii_audio_channel_play(char ch,
                         unsigned char pan);
 ```
 
-One-shot playback. The voice plays the sample once and stops automatically at end-of-sample (IRQ flag set in status register).
+One-shot playback. The voice plays the sample once and stops automatically at end-of-sample (IRQ flag set in status register). Loop points A and B are set to 0: non-zero loop points loop a sample even without the loop bit, and a voice keeps the ones of an earlier looped play (measured on a U64, firmware 3.15a; before 1.4.2 a one-shot after a loop looped for ever).
 
 | Parameter | Description |
 |-----------|-------------|
