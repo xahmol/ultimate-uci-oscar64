@@ -2577,7 +2577,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_isstatusdataavailable` | Tested (indirect) | via uii_readstatus |
 | `uii_load_config` | Tested | UBoot64-v2 (program settings files); fixed in 1.2.1 |
 | `uii_load_reu` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, heartbeat-demo, landoficeandfire, mandelbrot-upic |
-| `uii_load_reu_at` | Tested | used in UltimateDemo2026 |
+| `uii_load_reu_at` | Tested | used in UltimateDemo2026; GeoUltra tests/smoke/guseek.c: after `uii_seek_file` it loads from the file position (U64-II, fw 3.15a, 2026-10-28) |
 | `uii_load_reu_preload` | **Untested** | not used by any project yet |
 | `uii_mount_disk` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_open_dir` | Tested | used in UBoot64-v2 |
@@ -2594,10 +2594,10 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_resetpalette` | Tested | used in UltimateDemo2026, landoficeandfire, mandelbrot-upic |
 | `uii_save_c64_memory` | **Untested** | not used by any project yet |
 | `uii_save_reu` | **Untested** | not used by any project yet |
-| `uii_save_reu_at` | **Untested** | not used by any project yet |
+| `uii_save_reu_at` | Tested | GeoUltra tests/smoke/guseek.c: 64 KB to a new file, and 256 bytes after `uii_seek_file` into a file opened with attrib `0x03` overwrite in place at the file position, size unchanged (U64-II, fw 3.15a, 2026-10-28) |
 | `uii_save_reu_preload` | **Untested** | not used by any project yet |
 | `uii_scan_media` | Tested | used in UltimateDemo2026, heartbeat-demo |
-| `uii_seek_file` | **Untested** | not used by any project yet |
+| `uii_seek_file` | Tested | GeoUltra tests/smoke/guseek.c, with `uii_save_reu_at`/`uii_load_reu_at` (U64-II, fw 3.15a, 2026-10-28) |
 | `uii_send_with_name` | Tested (indirect) | via uii_softiec_get_fatname and the DOS name commands |
 | `uii_sendcommand` | Tested | used in DMBoot, UBoot64-v2, landoficeandfire, mandelbrot-upic |
 | `uii_sendcommand_data` | Tested (indirect) | 1.3.0; via uii_write_file_from |
