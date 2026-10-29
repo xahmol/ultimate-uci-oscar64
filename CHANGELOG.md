@@ -5,6 +5,22 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.3] - 2026-10-29
+
+### Fixed (documentation)
+
+Measured on a U64-II (firmware 3.15a) by GeoUltra (`tests/smoke/gud64.c`):
+
+- Disk images can be opened: D64, D81 and DNP files open with
+  `uii_open_file()` attribute `0x01` (and `0x03`) in `/Temp` and
+  read-only from USB, and `uii_load_reu_at()` loads them whole into the
+  REU. The manual said the firmware rejects a read-open of a disk image
+  with `89,NOT A DISK IMAGE`.
+- Hardware test status: `uii_get_ramdisk_info()` tested; added
+  `uii_loadIntoRamDisk()` (trial run returns `91`); `uii_seek_file()`
+  and `uii_save_reu_at()` marked tested (GeoUltra `guseek.c`, already in
+  the manual since 1.4.2).
+
 ## [1.4.2] - 2026-10-21
 
 ### Fixed

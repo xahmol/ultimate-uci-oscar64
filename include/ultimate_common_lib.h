@@ -23,8 +23,8 @@ Patches and pull requests are welcome
 // Must match the VERSION file; `make check` verifies this.
 #define UII_LIB_VERSION_MAJOR 1
 #define UII_LIB_VERSION_MINOR 4
-#define UII_LIB_VERSION_PATCH 2
-#define UII_LIB_VERSION "1.4.2"
+#define UII_LIB_VERSION_PATCH 3
+#define UII_LIB_VERSION "1.4.3"
 
 #include <stdlib.h>
 #include <stdio.h>

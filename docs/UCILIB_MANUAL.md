@@ -485,9 +485,9 @@ Every command places a null-terminated status string in `uii_status[]` after com
 | `"86,CAN'T READ DIRECTORY"` | `uii_open_dir` — directory unreadable |
 | `"88,NO INFORMATION AVAILABLE"` | `uii_file_info` — no file open |
 | `"88,FILE NOT FOUND"` | `uii_file_stat` — named file not found |
-| `"89,NOT A DISK IMAGE"` | `uii_mount_disk` — file is not a disk image. Also confirmed returned by `uii_open_file()` (generic read-open, attrib `0x01`) when called on a disk image file — the firmware rejects a plain read-open of disk images outright; they can only be accessed via `uii_mount_disk()`, not opened generically |
+| `"89,NOT A DISK IMAGE"` | `uii_mount_disk` — file is not a disk image. An earlier version of this manual said `uii_open_file()` returns it for any disk image; that does not hold on an Ultimate 64-II with firmware 3.15a: D64, D81 and DNP files open with attribute `0x01` (and `0x03`) in `/Temp` and read-only from USB, and `uii_load_reu_at()` loads them whole (GeoUltra `tests/smoke/gud64.c`, 2026-10-29). Where it was seen (other firmware or storage) is not known |
 | `"90,DRIVE NOT PRESENT"` | `uii_mount_disk`/`uii_unmount_disk` — drive ID not found |
-| `"92,..."` | `uii_file_stat` — confirmed returned on hardware when stat'ing a disk image file; exact meaning undocumented (not in the official command reference this manual is based on). Avoid using `uii_file_stat()`/`uii_open_file()` as a generic existence probe for disk image files — use `uii_mount_disk()`/`uii_change_dir()` directly instead, since those are the only commands confirmed to handle disk images predictably |
+| `"92,..."` | `uii_file_stat` — confirmed returned on hardware when stat'ing a disk image file; exact meaning undocumented (not in the official command reference this manual is based on). Avoid using `uii_file_stat()` as a generic existence probe for disk image files |
 | `"98,FUNCTION PROHIBITED"` | `uii_set_time` — setting disabled in Ultimate config |
 | `"ACCESS DENIED"` | Write to read-only file |
 
@@ -2541,7 +2541,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_get_drive_b_power` | **Untested** | not used by any project yet |
 | `uii_get_hwinfo` | Tested | used in UltimateDemo2026, heartbeat-demo |
 | `uii_get_path` | Tested | used in DMBoot, UBoot64-v2 |
-| `uii_get_ramdisk_info` | **Untested** | not used by any project yet |
+| `uii_get_ramdisk_info` | Tested | GeoUltra tests/smoke/gud64.c: status `00,OK`, 8 data bytes all 0 with no GEOS RAM disk (U64-II, fw 3.15a, 2026-10-29) |
 | `uii_get_time` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_getinterfacecount` | **Untested** | not used by any project yet |
 | `uii_getipaddress` | **Untested** | not used by any project yet |
@@ -2577,11 +2577,12 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_isstatusdataavailable` | Tested (indirect) | via uii_readstatus |
 | `uii_load_config` | Tested | UBoot64-v2 (program settings files); fixed in 1.2.1 |
 | `uii_load_reu` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, heartbeat-demo, landoficeandfire, mandelbrot-upic |
-| `uii_load_reu_at` | Tested | used in UltimateDemo2026; GeoUltra tests/smoke/guseek.c: after `uii_seek_file` it loads from the file position (U64-II, fw 3.15a, 2026-10-28) |
+| `uii_load_reu_at` | Tested | used in UltimateDemo2026; GeoUltra tests/smoke/guseek.c: after `uii_seek_file` it loads from the file position (U64-II, fw 3.15a, 2026-10-28); gud64.c: whole D64, D81 and DNP images (2026-10-29) |
+| `uii_loadIntoRamDisk` | Tested (trial only) | GeoUltra tests/smoke/gud64.c: `whatif` = 1 with a D64 returned status `91` (meaning undocumented; U64-II, fw 3.15a, 2026-10-29); a real load not tried |
 | `uii_load_reu_preload` | **Untested** | not used by any project yet |
 | `uii_mount_disk` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_open_dir` | Tested | used in UBoot64-v2 |
-| `uii_open_file` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, heartbeat-demo, landoficeandfire, mandelbrot-upic |
+| `uii_open_file` | Tested | used in UltimateDemo2026, DMBoot, UBoot64-v2, heartbeat-demo, landoficeandfire, mandelbrot-upic; disk images (D64, D81, DNP) open too, GeoUltra gud64.c (2026-10-29) |
 | `uii_parse_deviceinfo` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_read_file` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_read_file_to` | Tested | 1.3.0; tests/upic_test.c: 256- and 1024-byte reads (two packets) on an Ultimate 64 Elite and an Elite II (fw 3.15a) |
