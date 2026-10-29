@@ -1175,14 +1175,16 @@ void uii_rename_file(char *oldname, char *newname);
 void uii_copy_file(char *source, char *destination);
 ```
 
-**Purpose:** Copy a file to a new name or path.
+**Purpose:** Copy a file from the current directory into another folder, under the same name.
 
 **Parameters:**
 
 | Parameter | Description |
 |-----------|-------------|
-| `source` | Source file path |
-| `destination` | Destination file path |
+| `source` | Name of the file in the current directory |
+| `destination` | Destination **folder** (e.g. `/USB0/GEOULTRA/BACKUP/`); the copy keeps the source's name |
+
+**Notes:** The firmware calls `fcopy(current path, source, destination, source, no overwrite)` (`software/filemanager/dos.cc`), so it cannot copy to a new name in the same folder, and it does not overwrite: delete an existing copy in the destination first. Verified on a U64-II (firmware 3.15a) by GeoUltra's write-back, 2026-10-29.
 
 **Status:** `"00,OK"` or a filesystem error.
 
@@ -2515,7 +2517,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_change_dir_home` | Tested | used in UltimateDemo2026, UBoot64-v2, heartbeat-demo |
 | `uii_close_file` | Tested | used in DMBoot, UBoot64-v2, landoficeandfire, mandelbrot-upic |
 | `uii_command_buffer` | Tested (indirect) | via every variable-length command |
-| `uii_copy_file` | **Untested** | not used by any project yet |
+| `uii_copy_file` | Tested | the command (`$0B`) used by GeoUltra's write-back (own assembler): copies into a folder keeping the name (U64-II, fw 3.15a, 2026-10-29) |
 | `uii_create_dir` | **Untested** | not used by any project yet |
 | `uii_decode_track` | **Untested** | not used by any project yet |
 | `uii_del_partition` | Does not work | answers OK but the partition stays (UBoot64/DMBoot, firmware 3.15a) |
