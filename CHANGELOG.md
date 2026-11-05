@@ -5,6 +5,28 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.4] - 2026-11-05
+
+### Fixed (documentation)
+
+Measured on a U64-II (firmware 3.15a) by GeoUltra (its file engine and a
+raw UCI probe):
+
+- `uii_file_stat()` answers `"82,FILE NOT FOUND"` for every name, also
+  for existing files and folders, so it is no existence test on this
+  firmware; the manual describes opening the file and `uii_file_info()`
+  instead. The command reference's `"88"` was not seen.
+- Three statuses come as text without a number: `"FILE EXISTS"`
+  (`uii_create_dir` on an existing name, `uii_open_file` create-new on
+  an existing file, `uii_rename_file` onto an existing name),
+  `"FILE DOESN'T EXIST"` (delete, rename, read-open of a missing file)
+  and `"ACCESS DENIED"`. `UII_SUCCESS` reads them as failures; parsing
+  the number gives 0.
+- `uii_rename_file()` never overwrites: an existing target answers
+  `"FILE EXISTS"` and both stay.
+- Hardware test status: `uii_create_dir` and `uii_rename_file` tested
+  (the same command bytes, sent by GeoUltra's assembler engine).
+
 ## [1.4.3] - 2026-10-29
 
 ### Fixed (documentation)

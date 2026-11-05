@@ -484,12 +484,16 @@ Every command places a null-terminated status string in `uii_status[]` after com
 | `"85,NO FILE OPEN"` | Read/write called without open file |
 | `"86,CAN'T READ DIRECTORY"` | `uii_open_dir` — directory unreadable |
 | `"88,NO INFORMATION AVAILABLE"` | `uii_file_info` — no file open |
-| `"88,FILE NOT FOUND"` | `uii_file_stat` — named file not found |
+| `"88,FILE NOT FOUND"` | `uii_file_stat` — named file not found (from the command reference; on a U64-II with firmware 3.15a the command answers `"82,FILE NOT FOUND"` instead, for missing and existing files alike: see `uii_file_stat`) |
 | `"89,NOT A DISK IMAGE"` | `uii_mount_disk` — file is not a disk image. An earlier version of this manual said `uii_open_file()` returns it for any disk image; that does not hold on an Ultimate 64-II with firmware 3.15a: D64, D81 and DNP files open with attribute `0x01` (and `0x03`) in `/Temp` and read-only from USB, and `uii_load_reu_at()` loads them whole (GeoUltra `tests/smoke/gud64.c`, 2026-10-29). Where it was seen (other firmware or storage) is not known |
 | `"90,DRIVE NOT PRESENT"` | `uii_mount_disk`/`uii_unmount_disk` — drive ID not found |
 | `"92,..."` | `uii_file_stat` — confirmed returned on hardware when stat'ing a disk image file; exact meaning undocumented (not in the official command reference this manual is based on). Avoid using `uii_file_stat()` as a generic existence probe for disk image files |
 | `"98,FUNCTION PROHIBITED"` | `uii_set_time` — setting disabled in Ultimate config |
 | `"ACCESS DENIED"` | Write to read-only file |
+| `"FILE EXISTS"` | `uii_create_dir` on an existing name, `uii_open_file` with `0x06` (create new) on an existing file, `uii_rename_file` onto an existing file or folder (it is not overwritten) |
+| `"FILE DOESN'T EXIST"` | `uii_delete_file`, `uii_rename_file` or `uii_open_file` (read) of a missing file |
+
+**Status strings without a number.** `"ACCESS DENIED"`, `"FILE EXISTS"` and `"FILE DOESN'T EXIST"` come without the `NN,` prefix (measured on a U64-II, firmware 3.15a, GeoUltra 2026-11-05: the file system's own messages passed on as text). `UII_SUCCESS` still reads them correctly as failures, but code that parses the number with `atoi(uii_status)` gets 0 for them, which looks like `"00"`: compare the text, or check `UII_SUCCESS` first.
 
 ### Checking Success
 
@@ -1112,7 +1116,9 @@ void uii_file_stat(char *filename);
 
 **Data returned:** Same format as `uii_file_info()`.
 
-**Status:** `"00,OK"` or `"88,FILE NOT FOUND"`.
+**Status:** `"00,OK"` or `"88,FILE NOT FOUND"` (command reference).
+
+**Firmware 3.15a:** on a U64-II with firmware 3.15a the command answers `"82,FILE NOT FOUND"` for every name tried: an existing file, an existing folder and a missing file, in the current directory after `uii_change_dir()` (GeoUltra, 2026-11-04 and 2026-11-05). It is therefore no existence test there. Open the file with `uii_open_file(0x01, ...)` and use `uii_file_info()` instead; a missing file then answers `"FILE DOESN'T EXIST"`. Disk images (D64, D81) open and report their size the same way.
 
 ---
 
@@ -1142,7 +1148,7 @@ void uii_delete_file(char *filename);
 |-----------|-------------|
 | `filename` | Name of the file to delete |
 
-**Status:** `"00,OK"` or a filesystem error.
+**Status:** `"00,OK"`, or `"FILE DOESN'T EXIST"` (no number) for a missing file. An empty folder is deleted the same way.
 
 **Notes:** Used in this project before `uii_open_file(..., 0x06, ...)` because overwrite mode (`0x0E`) was found to be unreliable on some firmware versions. The safe pattern is delete then create new.
 
@@ -1163,7 +1169,7 @@ void uii_rename_file(char *oldname, char *newname);
 | `oldname` | Current filename |
 | `newname` | New filename |
 
-**Status:** `"00,OK"` or a filesystem error.
+**Status:** `"00,OK"`; `"FILE DOESN'T EXIST"` when `oldname` is missing; `"FILE EXISTS"` when `newname` names an existing file or folder, which is left as it is (no overwrite, no move into the folder). Both without a number (U64-II, fw 3.15a, 2026-11-05).
 
 **Notes:** The two names are sent in a single command packet separated by a null byte.
 
@@ -1322,7 +1328,7 @@ void uii_create_dir(char *directory);
 |-----------|-------------|
 | `directory` | Name for the new directory |
 
-**Status:** `"00,OK"` or a filesystem error.
+**Status:** `"00,OK"`, or `"FILE EXISTS"` (no number) when the name exists.
 
 ---
 
@@ -2518,7 +2524,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_close_file` | Tested | used in DMBoot, UBoot64-v2, landoficeandfire, mandelbrot-upic |
 | `uii_command_buffer` | Tested (indirect) | via every variable-length command |
 | `uii_copy_file` | Tested | the command (`$0B`) used by GeoUltra's write-back (own assembler): copies into a folder keeping the name (U64-II, fw 3.15a, 2026-10-29) |
-| `uii_create_dir` | **Untested** | not used by any project yet |
+| `uii_create_dir` | Tested | the command (`$16`) used by GeoUltra's file engine (own assembler, same command bytes; U64-II, fw 3.15a, 2026-11-04) |
 | `uii_decode_track` | **Untested** | not used by any project yet |
 | `uii_del_partition` | Does not work | answers OK but the partition stays (UBoot64/DMBoot, firmware 3.15a) |
 | `uii_delete_file` | Tested | used in DMBoot, UBoot64-v2 |
@@ -2533,7 +2539,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_enable_drive_b` | Tested | used in DMBoot, UBoot64-v2 |
 | `uii_file_info` | Tested | used in UltimateDemo2026, landoficeandfire |
 | `uii_file_size` | Tested | used in UltimateDemo2026 |
-| `uii_file_stat` | Tested | used in UBoot64-v2, landoficeandfire |
+| `uii_file_stat` | Tested, see notes | used in UBoot64-v2, landoficeandfire; on a U64-II with fw 3.15a it answers `"82,FILE NOT FOUND"` for existing files too (GeoUltra, 2026-11-05) |
 | `uii_find_media_path` | Tested | used in UltimateDemo2026, heartbeat-demo |
 | `uii_finish_capture` | **Untested** | not used by any project yet |
 | `uii_freeze` | **Untested** | not used by any project yet |
@@ -2592,7 +2598,7 @@ function to Tested in this table when a project has used it on hardware.
 | `uii_readdata_to` | Tested (indirect) | 1.3.0; via uii_read_file_to |
 | `uii_readstatus` | Tested | used in DMBoot, UBoot64-v2, mandelbrot-upic |
 | `uii_reboot` | Tested | used in landoficeandfire |
-| `uii_rename_file` | **Untested** | not used by any project yet |
+| `uii_rename_file` | Tested | the command (`$0A`) used by GeoUltra's file engine (own assembler, same command bytes; U64-II, fw 3.15a, 2026-11-04): renames within a folder, refuses an existing target with `"FILE EXISTS"` |
 | `uii_reset_uiidata` | **Untested** | not used by any project yet |
 | `uii_resetpalette` | Tested | used in UltimateDemo2026, landoficeandfire, mandelbrot-upic |
 | `uii_save_c64_memory` | **Untested** | not used by any project yet |
