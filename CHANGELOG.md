@@ -5,6 +5,19 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.6] - 2026-11-11
+
+### Fixed (documentation)
+
+Measured on a U64-II (firmware 3.15a) by GeoUltra's file engine:
+
+- `uii_rename_file` moves: both names may be paths relative to the
+  current directory, which moves a file or a folder (with its contents)
+  into another folder of the same volume; an absolute new name is
+  refused.
+- `uii_copy_file` into the source's own folder answers OK and copies
+  nothing.
+
 ## [1.4.5] - 2026-11-11
 
 ### Fixed (documentation)

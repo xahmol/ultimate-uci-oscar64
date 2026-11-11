@@ -1171,6 +1171,8 @@ void uii_rename_file(char *oldname, char *newname);
 
 **Status:** `"00,OK"`; `"FILE DOESN'T EXIST"` when `oldname` is missing; `"FILE EXISTS"` when `newname` names an existing file or folder, which is left as it is (no overwrite, no move into the folder). Both without a number (U64-II, fw 3.15a, 2026-11-05).
 
+**Paths (measured on a U64-II, fw 3.15a, 2026-11-11):** both names may be paths relative to the current directory, and then the rename **moves** the file or folder (a folder with everything in it) into another folder of the same volume: from `/USB0/`, `GEOULTRA/test/SRC` → `GEOULTRA/test/MOVED/SRC` works; `SRC` → `MOVED/SRC` from the parent works too. An absolute path (`/USB0/...`) as the new name is refused. GeoUltra's file engine moves on the Ultimate this way.
+
 **Notes:** The two names are sent in a single command packet separated by a null byte.
 
 ---
@@ -1190,7 +1192,7 @@ void uii_copy_file(char *source, char *destination);
 | `source` | Name of the file in the current directory |
 | `destination` | Destination **folder** (e.g. `/USB0/GEOULTRA/BACKUP/`); the copy keeps the source's name |
 
-**Notes:** The firmware calls `fcopy(current path, source, destination, source, no overwrite)` (`software/filemanager/dos.cc`), so it cannot copy to a new name in the same folder, and it does not overwrite: delete an existing copy in the destination first. Verified on a U64-II (firmware 3.15a) by GeoUltra's write-back, 2026-10-29.
+**Notes:** The firmware calls `fcopy(current path, source, destination, source, no overwrite)` (`software/filemanager/dos.cc`), so it cannot copy to a new name in the same folder, and it does not overwrite: delete an existing copy in the destination first. Verified on a U64-II (firmware 3.15a) by GeoUltra's write-back, 2026-10-29. A copy into the source's own folder answers `"00,OK"` and copies nothing (measured 2026-11-11): check for it before relying on the status.
 
 **Status:** `"00,OK"` or a filesystem error.
 
