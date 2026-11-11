@@ -5,6 +5,17 @@ All notable changes to ultimate-uci-oscar64. Versions follow
 changes (renamed or removed functions, changed parameters), MINOR for new
 functions, PATCH for fixes that keep the API.
 
+## [1.4.5] - 2026-11-11
+
+### Fixed (documentation)
+
+- The palette functions (`uii_getpalette`, `uii_setpalette`,
+  `uii_setpalettecolor`, `uii_resetpalette`) were described as in a
+  firmware test-merge branch only; they are in the Ultimate 64's 3.15a
+  release (not yet released for the C64 Ultimate). Checked again on a
+  U64-II with 3.15a by GeoUltra: get, set and a set back to the read
+  palette.
+
 ## [1.4.4] - 2026-11-05
 
 ### Fixed (documentation)

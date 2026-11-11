@@ -832,7 +832,7 @@ power cycle removes them.
 void uii_getpalette(void);
 ```
 
-**Purpose:** Read the current 16-color VIC palette into `uii_data[0..47]` (16 RGB triplets, index order matches the VIC color numbers). Firmware test-merge branch only — not yet in a tagged release.
+**Purpose:** Read the current 16-color VIC palette into `uii_data[0..47]` (16 RGB triplets, index order matches the VIC color numbers). Firmware 3.15 and later on the Ultimate 64 (in its 3.15a release); not yet released for the C64 Ultimate.
 
 **Wire format:** `$04 $51` — see `control_target.cc`'s `CTRL_CMD_GET_PALETTE`.
 
@@ -844,7 +844,7 @@ void uii_getpalette(void);
 void uii_setpalette(const char *rgb48);
 ```
 
-**Purpose:** Replace the entire 16-color VIC palette. Firmware test-merge branch only.
+**Purpose:** Replace the entire 16-color VIC palette. Firmware 3.15 and later on the Ultimate 64 (in its 3.15a release); not yet released for the C64 Ultimate.
 
 **Parameters:**
 
@@ -862,7 +862,7 @@ void uii_setpalette(const char *rgb48);
 void uii_setpalettecolor(char index, char r, char g, char b);
 ```
 
-**Purpose:** Set a single palette color. Firmware test-merge branch only.
+**Purpose:** Set a single palette color. Firmware 3.15 and later on the Ultimate 64 (in its 3.15a release); not yet released for the C64 Ultimate.
 
 **Parameters:**
 
@@ -881,7 +881,7 @@ void uii_setpalettecolor(char index, char r, char g, char b);
 void uii_resetpalette(void);
 ```
 
-**Purpose:** Restore the default VIC palette. Firmware test-merge branch only.
+**Purpose:** Restore the default VIC palette. Firmware 3.15 and later on the Ultimate 64 (in its 3.15a release); not yet released for the C64 Ultimate.
 
 **Wire format:** `$04 $54` — see `control_target.cc`'s `CTRL_CMD_RESET_PALETTE`.
 
